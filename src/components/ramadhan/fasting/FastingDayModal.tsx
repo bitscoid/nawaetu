@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "@/context/LocaleContext";
 import { FASTING_STATUS_META, MADZHAB_OPTIONS, getConsequence } from "@/data/fasting/fiqh-rules";
 import type { FastingDayLog, FastingStatus, Madzhab } from "@/data/fasting/types";
@@ -65,6 +66,12 @@ export default function FastingDayModal({
     );
     const [note, setNote] = useState(initialLog?.note ?? "");
     const [showMadzhabSelector, setShowMadzhabSelector] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -109,7 +116,7 @@ export default function FastingDayModal({
         onClose();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
     const modalTitle = (t.fastingDayModalTitle as string)
         .replace("{day}", String(hijriDay))
@@ -117,45 +124,45 @@ export default function FastingDayModal({
 
     const statusMeta = FASTING_STATUS_META[selectedStatus];
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-            {/* Darker backdrop with blur for better focus */}
+    const modalContent = (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 overscroll-none">
+            {/* Opaque backdrop with high blur for maximum focus */}
             <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/95 backdrop-blur-3xl"
                 onClick={onClose}
             />
 
             {/* Modal — Full screen on mobile, centered on desktop */}
             <div
-                className="relative w-full h-full sm:h-auto sm:max-w-md sm:rounded-2xl border-0 sm:border border-white/15 shadow-2x overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-300"
+                className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-md sm:rounded-2xl border-0 sm:border border-white/15 shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-300"
                 style={{ background: "rgb(12, 12, 18)" }}
             >
-                {/* Header — larger and more centered on mobile */}
-                <div className="px-5 pt-6 pb-4 border-b border-white/8 shrink-0 flex items-center justify-between">
+                {/* Header — compact and centered */}
+                <div className="px-5 pt-3 pb-2 border-b border-white/8 shrink-0 flex items-center justify-between">
                     <div>
-                        <h2 className="font-bold text-white text-base">{modalTitle}</h2>
+                        <h2 className="font-bold text-white text-sm sm:text-base">{modalTitle}</h2>
                         {gregorianDate && (
-                            <p className="text-[11px] text-white/40 mt-1">{gregorianDate}</p>
+                            <p className="text-[10px] text-white/40 mt-0.5">{gregorianDate}</p>
                         )}
                     </div>
                     {/* Add Close button back for better mobile UX in full screen */}
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:bg-white/10"
+                        className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:bg-white/10"
                     >
                         ✕
                     </button>
                 </div>
 
                 {/* Scrollable body — takes up remaining space */}
-                <div className="px-5 py-5 space-y-5 flex-1 overflow-y-auto">
+                <div className="px-5 py-3 space-y-3 flex-1 overflow-y-auto overscroll-contain scrollbar-hide">
 
-                    {/* Status Picker — Larger buttons for accessibility */}
+                    {/* Status Picker — More compact grid */}
                     <div>
-                        <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
+                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-2">
                             {t.fastingDayModalStatusLabel}
                         </p>
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        <div className="grid grid-cols-4 gap-1.5">
                             {visibleStatuses.map((status) => {
                                 const meta = FASTING_STATUS_META[status];
                                 const isSelected = selectedStatus === status;
@@ -166,13 +173,13 @@ export default function FastingDayModal({
                                     <button
                                         key={status}
                                         onClick={() => setSelectedStatus(status)}
-                                        className={`rounded-xl border px-1 py-3.5 text-center transition-all duration-200 active:scale-90 ${isSelected
+                                        className={`rounded-xl border px-1 py-1.5 text-center transition-all duration-200 active:scale-90 ${isSelected
                                             ? "border-[rgb(var(--color-primary))] bg-[rgb(var(--color-primary))]/20 text-white shadow-[0_0_15px_rgba(var(--color-primary),0.15)]"
                                             : "border-white/8 bg-white/3 text-white/40 hover:border-white/15 hover:text-white/60"
                                             }`}
                                     >
-                                        <span className="block text-2xl mb-1.5">{meta.icon}</span>
-                                        <span className="text-[10px] font-bold leading-tight block">{label}</span>
+                                        <span className="block text-xl mb-1">{meta.icon}</span>
+                                        <span className="text-[9px] font-bold leading-tight block">{label}</span>
                                     </button>
                                 );
                             })}
@@ -246,15 +253,15 @@ export default function FastingDayModal({
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                             placeholder={t.fastingDayModalNotePlaceholder}
-                            rows={3}
+                            rows={2}
                             maxLength={200}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/20 resize-none focus:outline-none focus:border-[rgb(var(--color-primary))]/40 transition-colors"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-white/20 resize-none focus:outline-none focus:border-[rgb(var(--color-primary))]/40 transition-colors"
                         />
                     </div>
                 </div>
 
-                {/* Footer — Full width buttons on mobile */}
-                <div className="flex gap-3 px-5 pb-8 pt-4 border-t border-white/8 shrink-0 bg-black/20">
+                {/* Footer — Solid background for clarity */}
+                <div className="flex gap-3 px-5 pb-8 pt-3 border-t border-white/8 shrink-0 bg-[#0c0c12]">
                     <button
                         onClick={onClose}
                         className="flex-1 rounded-xl border border-white/10 bg-white/3 py-4 text-xs font-bold text-white/50 hover:bg-white/8 transition-all active:scale-95"
@@ -272,4 +279,6 @@ export default function FastingDayModal({
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }
