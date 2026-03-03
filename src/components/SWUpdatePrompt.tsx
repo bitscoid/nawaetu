@@ -24,10 +24,13 @@ import { RefreshCcw } from "lucide-react";
 import { useLocale } from "@/context/LocaleContext";
 import { APP_CONFIG } from "@/config/app-config";
 
+import { getStorageService } from "@/core/infrastructure/storage";
+
 export default function SWUpdatePrompt() {
     const { t } = useLocale();
 
     useEffect(() => {
+        const storage = getStorageService();
         if (
             typeof window === "undefined" ||
             !window.navigator ||
@@ -80,12 +83,6 @@ export default function SWUpdatePrompt() {
         });
 
         // 2. Listen for 'updatefound' (standard) usually handled by workbox-window or next-pwa
-        // next-pwa might not emit a custom event, so we poll or hook into registration
-        // But since we don't have easy access to the registration object globally here without re-registering...
-        // We rely on standard API.
-
-        // However, standard SW registration happens in window load usually.
-        // We can try to get registrations.
         navigator.serviceWorker.getRegistrations().then((regs) => {
             regs.forEach(reg => {
                 reg.addEventListener('updatefound', () => {
@@ -107,63 +104,26 @@ export default function SWUpdatePrompt() {
             // A. Standard SW Update
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then((reg) => {
+                    // Force update check
+                    reg.update().catch(() => { });
                 });
             }
 
-            // B. "Nuclear" Version Check (Fix for iOS Revert Bug)
-            // Fetch server version and kill SW if client is stuck
+            // B. "Nuclear" Version Check
             try {
-                // Get current client version from config (bundled at build time)
-                // We need to import APP_CONFIG here or use a prop.
-                // Since this component is client-side, we fetching the API is best.
-
                 const res = await fetch('/api/system/version?t=' + Date.now()); // Bust API cache
                 if (res.ok) {
                     const data = await res.json();
-                    const serverVersion = data.version;
-
-                    // Client version must be injected or known.
-                    // We can read it from a data attribute or global variable if needed, 
-                    // but usually we can't easily get the *running* code version unless we bake it in.
-                    // Let's assume the build system injects it, or we rely on the fact that 
-                    // this code ITSELF is running v1.5.3 (if stuck).
-                    // WAIT. If this code is running v1.5.7, then we are fine.
-                    // The problem is when the code running is v1.5.3.
-                    // But I can't change v1.5.3 code anymore! It's already cached!
-
-                    // THIS IS THE CATCH-22.
-                    // If the user is seeing v1.5.3, they are running v1.5.3's `SWUpdatePrompt.tsx`.
-                    // I cannot patch v1.5.3.
-
-                    // HOWEVER, the user said: "versinya sudah update otomatis akan tetapi ketika saya kill appsnya... kembali lagi"
-                    // This means they DO see v1.5.7 momentarily.
-                    // This means v1.5.7 *does* load.
-                    // So if I add this logic to v1.5.8, when they update to v1.5.8, 
-                    // the *next* time they open, if it ever tries to revert, v1.5.8's SW (if installed correctly) should hold.
-
-                    // Actually, if they revert to v1.5.3, my new code won't run.
-                    // BUT, if they are *currently* on the "good" version (before kill), 
-                    // maybe I can do something to "cement" the new SW?
-
-                    // The issue is likely that v1.5.3 SW is waiting or active and not letting go.
-                    // If I run `unregister()` in v1.5.8, it will kill whatever SW is currently running (even if it's the old one, assuming we can control it).
-
-                    // Check if we are running the NEW version.
-                    // If we are, ensure we unregister any 'zombie' SWs that might be lurking or ensure we are NOT caching the app shell.
-
-                    // Actually, the most effective fix for "reverts to old version" is to ensure the NEW version's SW (v1.5.8)
-                    // has `skipWaiting()` and `clients.claim()` called IMMEDIATELY.
-
                     if ('serviceWorker' in navigator) {
                         navigator.serviceWorker.getRegistrations().then(regs => {
                             regs.forEach(reg => {
-                                // If we are in v1.5.8, we want to make sure we own the client.
-                                // We can also aggressively clear old caches here.
+                                // Logic to ensure we catch reverts could go here
                             });
                         });
                     }
                 }
             } catch (e) {
+                // Silently fail version check
             }
         };
 
@@ -173,9 +133,10 @@ export default function SWUpdatePrompt() {
             const FIX_KEY = `nawaetu_ios_fix_${APP_CONFIG.version}_smart`;
 
             // Run this cleanup to ensure old SW is dead
-            if (typeof window !== 'undefined' && !localStorage.getItem(FIX_KEY)) {
+            try {
+                // Use storage service instead of direct localStorage to avoid SecurityError
+                if (typeof window !== 'undefined' && !storage.getOptional(FIX_KEY as any)) {
 
-                try {
                     let reloadNeeded = false;
 
                     // 1. Unregister OLD 'sw.js' and 'sw-v158.js' (zombies)
@@ -195,24 +156,26 @@ export default function SWUpdatePrompt() {
                         }
                     }
 
-                    // 2. Clear All Caches (Force fresh assets) - Still good to do once
+                    // 2. Clear All Caches (Force fresh assets)
                     if ('caches' in window) {
-                        const keys = await caches.keys();
-                        // Optional: Only clear if we really need to. 
-                        // But to be safe against v1.5.3 HTML cache, lets clear.
-                        await Promise.all(keys.map(key => caches.delete(key)));
+                        try {
+                            const keys = await caches.keys();
+                            await Promise.all(keys.map(key => caches.delete(key)));
+                        } catch (cacheErr) {
+                            // Caches might also be blocked in restricted iframes
+                        }
                     }
 
                     // 3. Mark as fixed
-                    localStorage.setItem(FIX_KEY, 'true');
+                    storage.set(FIX_KEY as any, 'true');
 
                     // 4. Force Reload if we killed something
                     if (reloadNeeded) {
                         window.location.reload();
                     }
-
-                } catch (e) {
                 }
+            } catch (e) {
+                // Outer catch for extreme safety
             }
         };
 

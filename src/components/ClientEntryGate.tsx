@@ -61,6 +61,26 @@ export default function ClientEntryGate({ children }: ClientEntryGateProps) {
 
     return (
         <>
+            {/* Show a non-intrusive loading indicator if checking takes longer than expected */}
+            {
+                isChecking && (
+                    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white px-6 text-center">
+                        <div className="relative mb-6">
+                            <div className="h-12 w-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="h-4 w-4 rounded-full bg-emerald-500 animate-pulse" />
+                            </div>
+                        </div>
+                        <p className="text-emerald-500/80 font-medium animate-pulse">
+                            Menghubungkan ke Nawaetu...
+                        </p>
+                        <p className="mt-2 text-xs text-white/40 max-w-[200px]">
+                            Jika halaman tetap kosong, pastikan browser Anda mengizinkan cookie pihak ketiga.
+                        </p>
+                    </div>
+                )
+            }
+
             {/* Always render children for SSR and SEO. Use opacity to prevent FOUC elegantly. */}
             <div
                 style={{
@@ -73,9 +93,11 @@ export default function ClientEntryGate({ children }: ClientEntryGateProps) {
             </div>
 
             {/* Mount the onboarding overlay above the application if needed */}
-            {!isChecking && showOnboarding && (
-                <OnboardingOverlay onComplete={handleOnboardingComplete} />
-            )}
+            {
+                !isChecking && showOnboarding && (
+                    <OnboardingOverlay onComplete={handleOnboardingComplete} />
+                )
+            }
         </>
     );
 }

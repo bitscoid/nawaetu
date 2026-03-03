@@ -132,7 +132,14 @@ export default function AppOverlays() {
 
         // Global flag to ensure this logic runs ONLY ONCE per browser session
         const GLOBAL_SESSION_KEY = 'nawaetu_app_initialized';
-        const wasInitialized = sessionStorage.getItem(GLOBAL_SESSION_KEY) === 'true';
+        let wasInitialized = false;
+
+        try {
+            wasInitialized = sessionStorage.getItem(GLOBAL_SESSION_KEY) === 'true';
+        } catch (e) {
+            // If sessionStorage is blocked, we can't track initialization this way.
+            // But we shouldn't crash.
+        }
 
         if (wasInitialized) {
             return;
@@ -143,7 +150,11 @@ export default function AppOverlays() {
         const currentVersion = APP_CONFIG.version;
 
         // Mark as initialized IMMEDIATELY to prevent redirect loop
-        sessionStorage.setItem(GLOBAL_SESSION_KEY, 'true');
+        try {
+            sessionStorage.setItem(GLOBAL_SESSION_KEY, 'true');
+        } catch (e) {
+            // Silently fail if sessionStorage is blocked
+        }
 
         // If version mismatch, just update localStorage and log it
         // Don't redirect - AppOverlays may mount multiple times during navigation
