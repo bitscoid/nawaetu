@@ -336,9 +336,13 @@ export default function IntentionJournalWidget({ className = "" }: IntentionJour
                                 ref={dateInputRef}
                                 type="date"
                                 value={selectedDate}
-                                max={DateUtils.today()}
+                                max={new Date().toLocaleDateString('en-CA')} // Strict YYYY-MM-DD format for native mobile picker
                                 onChange={(e) => {
                                     if (e.target.value) {
+                                        if (e.target.value > new Date().toLocaleDateString('en-CA')) {
+                                            toast.error(locale === 'id' ? 'Tidak bisa memilih tanggal di masa depan' : 'Cannot select future dates');
+                                            return;
+                                        }
                                         setSelectedDate(e.target.value);
                                     }
                                 }}

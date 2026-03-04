@@ -332,9 +332,14 @@ export default function PrayerCheckInWidget() {
                                 ref={dateInputRef}
                                 type="date"
                                 value={selectedDate}
-                                max={DateUtils.today()}
+                                max={new Date().toLocaleDateString('en-CA')} // Strict YYYY-MM-DD format for native mobile
                                 onChange={(e) => {
                                     if (e.target.value) {
+                                        // Also prevent selecting future dates manually
+                                        if (e.target.value > new Date().toLocaleDateString('en-CA')) {
+                                            toast.error(t.homePrayerCheckInNotYet || "Belum waktunya");
+                                            return;
+                                        }
                                         setSelectedDate(e.target.value);
                                     }
                                 }}
