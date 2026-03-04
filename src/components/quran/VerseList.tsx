@@ -70,6 +70,7 @@ import {
     getVerseFontClass,
     formatFootnotes
 } from "@/lib/quran-utils";
+import { fetchSurahSegments, findActiveWordIndex, type VerseSegmentMap } from "@/lib/quran-segments-api";
 
 
 export interface Verse {
@@ -111,6 +112,13 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
     const [autoplayExecuted, setAutoplayExecuted] = useState(false);
+
+    // Word-by-Word audio highlight state (Karaoke Mode)
+    const [activeWord, setActiveWord] = useState<{ verseKey: string; idx: number } | null>(null);
+    const activeWordRef = useRef<{ verseKey: string; idx: number } | null>(null);
+    const rafIdRef = useRef<number | null>(null);
+    const segmentsRef = useRef<VerseSegmentMap | null>(null);
+    const segmentsCacheKeyRef = useRef<string | null>(null);
 
     // Settings State
     const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
@@ -389,11 +397,55 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     const [repeatCount, setRepeatCount] = useState(0);
 
     // Audio Logic
+
+    // --- Word Sync helpers (Karaoke Mode) ---
+    const stopWordSync = useCallback(() => {
+        if (rafIdRef.current !== null) {
+            cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = null;
+        }
+        activeWordRef.current = null;
+        setActiveWord(null);
+    }, []);
+
+    const startWordSync = useCallback((verseKey: string) => {
+        if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+
+        const tick = () => {
+            const audio = audioRef.current;
+            if (!audio || !segmentsRef.current) return;
+
+            const currentMs = audio.currentTime * 1000;
+            const segs = segmentsRef.current[verseKey];
+            if (!segs) {
+                rafIdRef.current = requestAnimationFrame(tick);
+                return;
+            }
+
+            const foundIdx = findActiveWordIndex(segs, currentMs);
+
+            // Only update state when the word actually changes — prevents needless re-renders
+            if (
+                foundIdx !== activeWordRef.current?.idx ||
+                verseKey !== activeWordRef.current?.verseKey
+            ) {
+                const next = foundIdx >= 0 ? { verseKey, idx: foundIdx } : null;
+                activeWordRef.current = next;
+                setActiveWord(next);
+            }
+
+            rafIdRef.current = requestAnimationFrame(tick);
+        };
+
+        rafIdRef.current = requestAnimationFrame(tick);
+    }, []);
+
     const handleStop = () => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
+        stopWordSync();
         setPlayingVerseKey(null);
         setCurrentAudioUrl(null);
         setIsContinuous(false);
@@ -551,6 +603,42 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
         }
     }, [currentAudioUrl, isPlaying]);
 
+    // --- Karaoke Mode: fetch segments and start RAF sync when verse changes ---
+    useEffect(() => {
+        if (!playingVerseKey || !currentReciterId) {
+            stopWordSync();
+            return;
+        }
+
+        const [surahIdStr] = playingVerseKey.split(':');
+        const surahId = parseInt(surahIdStr);
+        const cacheKey = `${surahId}-${currentReciterId}`;
+
+        // If we already loaded segments for this surah+reciter, just start syncing
+        if (segmentsCacheKeyRef.current === cacheKey && segmentsRef.current !== null) {
+            startWordSync(playingVerseKey);
+            return;
+        }
+
+        // New surah or reciter — kick off a background fetch, don't block render
+        segmentsCacheKeyRef.current = cacheKey;
+        segmentsRef.current = null;
+        stopWordSync();
+
+        fetchSurahSegments(surahId, currentReciterId).then(data => {
+            segmentsRef.current = data; // null = reciter doesn't support segments (graceful fallback)
+            if (data) {
+                // Only start RAF if still playing the same verse
+                startWordSync(playingVerseKey);
+            }
+        });
+
+        return () => {
+            // Cleanup on verse change or unmount
+            stopWordSync();
+        };
+    }, [playingVerseKey, currentReciterId, startWordSync, stopWordSync]);
+
     // Stop audio on unmount or pathname change
     useEffect(() => {
         const audioInstance = audioRef.current;
@@ -562,7 +650,6 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
             }
         };
     }, [pathname]); // Fires whenever pathname changes
-
 
     // Bookmarking Logic
     const handleBookmarkClick = (verse: Verse) => {
@@ -896,6 +983,11 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                                         isLoadingTafsir={loadingTafsir.has(verse.verse_key)}
                                         tafsirData={tafsirCache.get(verse.verse_key)?.data}
                                         locale={locale}
+                                        activeWordIdx={
+                                            activeWord?.verseKey === verse.verse_key
+                                                ? activeWord.idx
+                                                : undefined
+                                        }
                                         onPlay={handleVersePlay}
                                         onBookmarkToggle={handleBookmarkClick}
                                         onShareClick={setActiveVerseForShare}

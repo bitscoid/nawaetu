@@ -47,6 +47,7 @@ interface VerseCardProps {
     isLoadingTafsir: boolean;
     tafsirData?: TafsirContent;
     locale: string;
+    activeWordIdx?: number;  // Karaoke Mode — active word index for audio sync highlight
     onPlay: (verse: Verse, continuous: boolean) => void;
     onBookmarkToggle: (verse: Verse) => void;
     onShareClick: (verse: Verse) => void;
@@ -81,7 +82,8 @@ export default function VerseCard({
     onShareClick,
     onTafsirToggle,
     onReadFullTafsir,
-    prefetchShareDialog
+    prefetchShareDialog,
+    activeWordIdx,
 }: VerseCardProps) {
     const { t } = useLocale();
     const [isMasked, setIsMasked] = useState(false);
@@ -229,7 +231,16 @@ export default function VerseCard({
 
                             return (
                                 <div key={`word-${index}`} className="flex flex-col items-center justify-start group min-w-[2rem]">
-                                    <span className="mb-2 cursor-pointer transition-colors hover:text-[rgb(var(--color-primary))]">
+                                    {/* Arabic word — highlighted when this is the active karaoke word */}
+                                    <span className={cn(
+                                        "mb-2 cursor-pointer transition-colors duration-100",
+                                        // API wordIndex is 1-based; .map() index is 0-based, so compare (index + 1)
+                                        isPlayingVerse && (index + 1) === activeWordIdx
+                                            ? isDaylight
+                                                ? "text-emerald-600 font-bold scale-105"
+                                                : "text-[rgb(var(--color-primary))] font-bold"
+                                            : "hover:text-[rgb(var(--color-primary))]"
+                                    )}>
                                         {cleanedText}
                                     </span>
                                     <div className="flex flex-col items-center font-sans tracking-normal">
