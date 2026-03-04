@@ -42,6 +42,7 @@ interface VerseCardProps {
     scriptType: 'tajweed' | 'indopak';
     fontSize: 'small' | 'medium' | 'large';
     showTransliteration: boolean;
+    showWordByWord: boolean;
     activeTafsirVerse: string | null;
     isLoadingTafsir: boolean;
     tafsirData?: TafsirContent;
@@ -70,6 +71,7 @@ export default function VerseCard({
     scriptType,
     fontSize,
     showTransliteration,
+    showWordByWord,
     activeTafsirVerse,
     isLoadingTafsir,
     tafsirData,
@@ -213,36 +215,73 @@ export default function VerseCard({
                     isMasked ? "blur-md opacity-40 hover:opacity-60 cursor-pointer select-none" : "text-slate-200"
                 )}
             >
-                {scriptType === 'tajweed' && verse.text_uthmani_tajweed ? (
+                {showWordByWord && verse.words && verse.words.length > 0 ? (
+                    <div className="flex flex-wrap gap-x-4 md:gap-x-6 gap-y-6 md:gap-y-8 justify-start">
+                        {verse.words.filter((w: any) => w.char_type_name !== 'end').map((word: any, index: number) => {
+                            // Extract raw text and remove waqf (pause) symbols that render as boxes in isolated word fonts
+                            // \u06D6-\u06DC = Arabic waqf marks (used in Uthmani)
+                            // \u200B-\u200F = Zero-width spaces and formatting characters (often injected by formatting)
+                            // \uE000-\uF8FF = Private Use Area (PUA) where Indopak API encodes proprietary waqf font icons
+                            const rawText = scriptType === 'indopak'
+                                ? (word.text_indopak || word.text_uthmani || word.text || '')
+                                : (word.text_uthmani || word.text || '');
+                            const cleanedText = rawText.replace(/[\u06D6-\u06DC\u200B-\u200F\uE000-\uF8FF]/g, '').trim();
+
+                            return (
+                                <div key={`word-${index}`} className="flex flex-col items-center justify-start group min-w-[2rem]">
+                                    <span className="mb-2 cursor-pointer transition-colors hover:text-[rgb(var(--color-primary))]">
+                                        {cleanedText}
+                                    </span>
+                                    <div className="flex flex-col items-center font-sans tracking-normal">
+                                        {showTransliteration && word.transliteration?.text && (
+                                            <span className="text-[10px] md:text-xs text-[rgb(var(--color-primary-light))] text-center leading-tight mb-1 opacity-80 group-hover:opacity-100">
+                                                {word.transliteration.text}
+                                            </span>
+                                        )}
+                                        {word.translation?.text && (
+                                            <span className="text-[9px] md:text-[10px] text-slate-400 text-center leading-tight max-w-[90px] group-hover:text-slate-200 line-clamp-2" title={word.translation.text.replace(/<[^>]*>?/gm, '')}>
+                                                {word.translation.text.replace(/<[^>]*>?/gm, '')}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : scriptType === 'tajweed' && verse.text_uthmani_tajweed ? (
                     <span dangerouslySetInnerHTML={{ __html: sanitizeTajweedText(verse.text_uthmani_tajweed) }} />
                 ) : (
                     <span>{verse.text_indopak ? cleanIndopakText(verse.text_indopak) : verse.text_uthmani}</span>
                 )}
             </div>
             <div className="space-y-3">
-                {showTransliteration && verse.transliteration && (
-                    <p
-                        onClick={() => isMasked && setIsMasked(false)}
-                        className={cn(
-                            "text-[rgb(var(--color-primary-light))] text-sm md:text-base font-medium leading-relaxed transition-all duration-300",
-                            isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
+                {(!showWordByWord || !verse.words || verse.words.length === 0) && (
+                    <>
+                        {showTransliteration && verse.transliteration && (
+                            <p
+                                onClick={() => isMasked && setIsMasked(false)}
+                                className={cn(
+                                    "text-[rgb(var(--color-primary-light))] text-sm md:text-base font-medium leading-relaxed transition-all duration-300",
+                                    isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
+                                )}
+                            >
+                                {verse.transliteration}
+                            </p>
                         )}
-                    >
-                        {verse.transliteration}
-                    </p>
+                        <div
+                            onClick={() => isMasked && setIsMasked(false)}
+                            className={cn(
+                                "transition-all duration-300",
+                                isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
+                            )}
+                        >
+                            <p
+                                className="text-sm md:text-base leading-relaxed text-slate-400"
+                                dangerouslySetInnerHTML={{ __html: cleanTranslation(verse.translations[0]?.text || "") }}
+                            />
+                        </div>
+                    </>
                 )}
-                <div
-                    onClick={() => isMasked && setIsMasked(false)}
-                    className={cn(
-                        "transition-all duration-300",
-                        isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
-                    )}
-                >
-                    <p
-                        className="text-sm md:text-base leading-relaxed text-slate-400"
-                        dangerouslySetInnerHTML={{ __html: cleanTranslation(verse.translations[0]?.text || "") }}
-                    />
-                </div>
 
                 <div className={activeTafsirVerse === verse.verse_key ? 'mt-6 p-5 rounded-2xl bg-gradient-to-br from-[rgb(var(--color-primary))]/5 to-slate-900 border border-[rgb(var(--color-primary))]/20 animate-in slide-in-from-top-2' : 'hidden'}>
                     <div className="flex items-center gap-2 mb-3">

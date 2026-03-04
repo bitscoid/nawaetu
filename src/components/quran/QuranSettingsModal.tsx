@@ -31,6 +31,8 @@ export interface QuranSettingsModalProps {
     setScriptType: (type: 'tajweed' | 'indopak') => void;
     showTransliteration: boolean;
     setShowTransliteration: (show: boolean) => void;
+    showWordByWord: boolean;
+    setShowWordByWord: (show: boolean) => void;
     fontSize: 'small' | 'medium' | 'large';
     setFontSize: (size: 'small' | 'medium' | 'large') => void;
     perPage: number;
@@ -47,6 +49,8 @@ export default function QuranSettingsModal({
     setScriptType,
     showTransliteration,
     setShowTransliteration,
+    showWordByWord,
+    setShowWordByWord,
     fontSize,
     setFontSize,
     perPage,
@@ -115,6 +119,15 @@ export default function QuranSettingsModal({
                                 </div>
                                 <Switch checked={showTransliteration} onCheckedChange={setShowTransliteration} className="quran-toggle" />
                             </div>
+                            <div className="flex items-center justify-between p-4 rounded-2xl border border-[rgb(var(--color-primary))]/10 bg-[rgb(var(--color-primary))]/5 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-[rgb(var(--color-primary))]/10 flex items-center justify-center">
+                                        <BookOpen className="h-4 w-4 text-[rgb(var(--color-primary))]" />
+                                    </div>
+                                    <span className="font-bold text-sm tracking-tight">{t.quranWordByWord || "Terjemahan Per Kata"}</span>
+                                </div>
+                                <Switch checked={showWordByWord} onCheckedChange={setShowWordByWord} className="quran-toggle" />
+                            </div>
                         </div>
 
                         {/* Font Size */}
@@ -124,24 +137,6 @@ export default function QuranSettingsModal({
                                 <button onClick={() => setFontSize('small')} className={`flex-1 h-10 rounded-xl text-sm font-bold transition-all ${fontSize === 'small' ? 'bg-[rgb(var(--color-primary))] text-white shadow-lg quran-tab-active' : 'opacity-40 hover:opacity-100'}`}>A-</button>
                                 <button onClick={() => setFontSize('medium')} className={`flex-1 h-10 rounded-xl text-base font-bold transition-all ${fontSize === 'medium' ? 'bg-[rgb(var(--color-primary))] text-white shadow-lg quran-tab-active' : 'opacity-40 hover:opacity-100'}`}>A</button>
                                 <button onClick={() => setFontSize('large')} className={`flex-1 h-10 rounded-xl text-lg font-bold transition-all ${fontSize === 'large' ? 'bg-[rgb(var(--color-primary))] text-white shadow-lg quran-tab-active' : 'opacity-40 hover:opacity-100'}`}>A+</button>
-                            </div>
-                        </div>
-
-                        {/* Verses Per Page */}
-                        <div className="space-y-3">
-                            <Label className="text-[rgb(var(--color-primary-light))] text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 ml-1">{t.quranVersesPerPage}</Label>
-                            <div className="grid grid-cols-4 gap-2 bg-[rgb(var(--color-primary))]/5 p-1.5 rounded-2xl border border-[rgb(var(--color-primary))]/10">
-                                {[25, 50, 150, 300].map((num) => (
-                                    <button
-                                        key={num}
-                                        onClick={() => handlePerPageChange(num)}
-                                        disabled={isPending}
-                                        className={`h-10 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${perPage === num ? 'bg-[rgb(var(--color-primary))] text-white shadow-lg quran-tab-active' : 'opacity-40 hover:opacity-100'} ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        {isPending && perPage === num ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                                        {num}
-                                    </button>
-                                ))}
                             </div>
                         </div>
 

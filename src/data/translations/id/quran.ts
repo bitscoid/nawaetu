@@ -63,4 +63,13 @@ export const quranID = {
     quranLoopMode: "Mode Pengulangan",
     quranTajweedGuide: "Panduan Tajwid",
     quranClose: "Tutup",
+    quranWordByWord: "Terjemahan Per Kata",
+    // Quran Search
+    quranSearchVerses: "Cari Ayat",
+    quranSearchPlaceholderBody: "Ketik terjemahan (misal: sabar, puasa)...",
+    quranSearchNotFound: "Tidak ditemukan ayat untuk",
+    quranSearchFound: "Ditemukan",
+    quranSearchAyat: "ayat",
+    quranSearchButton: "Cari",
+    quranSearchSearching: "Mencari ayat...",
 };

@@ -28,6 +28,7 @@ import { getStorageService } from "@/core/infrastructure/storage";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
+import QuranSearchModal from "./QuranSearchModal";
 
 export interface DateType {
     hijri: {
@@ -295,29 +296,32 @@ export default function SurahList({ chapters }: SurahListProps) {
                 </Link>
             </div>
 
-            {/* Search Input */}
-            <div className="relative group pt-1">
-                <div className="absolute inset-0 bg-gradient-to-r from-[rgb(var(--color-primary))]/20 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl" />
-                <div className={cn(
-                    "relative border rounded-2xl flex items-center px-4 py-2.5 shadow-lg transition-all",
-                    isDaylight
-                        ? "bg-white border-slate-200 focus-within:border-emerald-500 focus-within:ring-emerald-100"
-                        : "bg-[#0f172a]/60 backdrop-blur-xl border-white/10 focus-within:border-[rgb(var(--color-primary))]/50 focus-within:ring-1 focus-within:ring-[rgb(var(--color-primary))]/30"
-                )}>
-                    <Search className={cn(
-                        "w-4 h-4 transition-colors",
-                        isDaylight ? "text-slate-400 group-focus-within:text-emerald-500" : "text-slate-400 group-focus-within:text-[rgb(var(--color-primary))]"
-                    )} />
-                    <Input
-                        placeholder={t.quranSearchPlaceholder}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className={cn(
-                            "border-none bg-transparent text-sm focus-visible:ring-0 px-3 h-auto py-1",
-                            isDaylight ? "text-slate-900 placeholder:text-slate-400" : "text-white placeholder:text-slate-500"
-                        )}
-                    />
+            {/* Search Input & Deep Search Button */}
+            <div className="flex items-center gap-2 pt-1">
+                <div className="relative group flex-1">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[rgb(var(--color-primary))]/20 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl" />
+                    <div className={cn(
+                        "relative border rounded-2xl flex items-center px-4 py-2.5 shadow-lg transition-all h-[44px]",
+                        isDaylight
+                            ? "bg-white border-slate-200 focus-within:border-emerald-500 focus-within:ring-emerald-100"
+                            : "bg-[#0f172a]/60 backdrop-blur-xl border-white/10 focus-within:border-[rgb(var(--color-primary))]/50 focus-within:ring-1 focus-within:ring-[rgb(var(--color-primary))]/30"
+                    )}>
+                        <Search className={cn(
+                            "w-4 h-4 transition-colors",
+                            isDaylight ? "text-slate-400 group-focus-within:text-emerald-500" : "text-slate-400 group-focus-within:text-[rgb(var(--color-primary))]"
+                        )} />
+                        <Input
+                            placeholder={t.quranSearchPlaceholder}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={cn(
+                                "border-none bg-transparent text-sm focus-visible:ring-0 px-3 h-auto py-1",
+                                isDaylight ? "text-slate-900 placeholder:text-slate-400" : "text-white placeholder:text-slate-500"
+                            )}
+                        />
+                    </div>
                 </div>
+                <QuranSearchModal />
             </div>
 
             {/* Surah List Header */}

@@ -63,4 +63,13 @@ export const quranEN = {
     quranLoopMode: "Loop Mode",
     quranTajweedGuide: "Tajweed Guide",
     quranClose: "Close",
+    quranWordByWord: "Word-by-Word Translation",
+    // Quran Search
+    quranSearchVerses: "Search Verses",
+    quranSearchPlaceholderBody: "Type translation (e.g. patience, fast)...",
+    quranSearchNotFound: "No verses found for",
+    quranSearchFound: "Found",
+    quranSearchAyat: "verses",
+    quranSearchButton: "Search",
+    quranSearchSearching: "Searching verses...",
 };

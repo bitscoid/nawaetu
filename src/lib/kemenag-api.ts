@@ -174,7 +174,7 @@ export const getKemenagVerses = cache(
 
       // Single API call - use quran.com only (faster, no dual API bottleneck)
       // quran.com API has everything we need: Arabic text + translations + harakat + transliteration
-      const apiUrl = `${API_CONFIG.QURAN_COM.BASE_URL}/verses/by_chapter/${chapterId}?language=${locale}&words=true&translations=${translationId}&fields=text_uthmani,text_uthmani_tajweed&page=${page}&per_page=${perPage}`;
+      const apiUrl = `${API_CONFIG.QURAN_COM.BASE_URL}/verses/by_chapter/${chapterId}?language=${locale}&words=true&word_fields=text_uthmani,text_indopak&translations=${translationId}&fields=text_uthmani,text_uthmani_tajweed&page=${page}&per_page=${perPage}`;
 
       const startTime = Date.now();
       const res = await fetchWithTimeout(
@@ -334,3 +334,55 @@ function createFallbackVerse(verseKey: string): any {
     meta: null,
   };
 }
+
+export interface SearchResultItem {
+  verse_key: string;
+  verse_id: number;
+  text_uthmani: string;
+  translation: string;
+  words: any[];
+}
+
+export interface SearchResponse {
+  query: string;
+  total_results: number;
+  current_page: number;
+  total_pages: number;
+  results: SearchResultItem[];
+}
+
+export const searchVerses = cache(async (query: string, page: number = 1, locale: string = "id", size: number = 20): Promise<SearchResponse> => {
+  if (!query || query.trim() === '') {
+    return { query, total_results: 0, current_page: 1, total_pages: 0, results: [] };
+  }
+
+  try {
+    const res = await fetchWithTimeout(
+      `${API_CONFIG.QURAN_COM.BASE_URL}/search?q=${encodeURIComponent(query)}&language=${locale}&size=${size}&page=${page}`,
+      { next: { revalidate: 3600 } },
+      { timeoutMs: 15000 }
+    );
+
+    if (!res.ok) throw new Error(`Search API failed: ${res.statusText}`);
+
+    const data = await res.json();
+    if (!data.search) throw new Error("Invalid search response");
+
+    return {
+      query: data.search.query,
+      total_results: data.search.total_results,
+      current_page: data.search.current_page,
+      total_pages: data.search.total_pages,
+      results: data.search.results.map((r: any) => ({
+        verse_key: r.verse_key,
+        verse_id: r.verse_id,
+        text_uthmani: r.text,
+        translation: r.translations?.[0]?.text || '',
+        words: r.words || [],
+      }))
+    };
+  } catch (error) {
+    console.error("Quran Search Error:", error);
+    throw error;
+  }
+});

@@ -82,12 +82,12 @@ export interface Verse {
         url: string;
     };
     translations: {
-        id: number;
-        resource_id: number;
+        id?: number;
+        resource_id?: number;
         text: string;
     }[];
-    transliteration?: string;
-
+    transliteration: string;
+    words?: any[];
 }
 
 interface VerseListProps {
@@ -115,6 +115,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     // Settings State
     const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
     const [showTransliteration, setShowTransliteration] = useState(true);
+    const [showWordByWord, setShowWordByWord] = useState(false);
     const [scriptType, setScriptType] = useState<'tajweed' | 'indopak'>('indopak'); // Default to Indopak for clarity
     const [viewMode, setViewMode] = useState<'list' | 'mushaf'>('list');
     const [perPage, setPerPage] = useState<number>(DEFAULT_SETTINGS.versesPerPage);
@@ -135,6 +136,54 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const autoplay = searchParams.get('autoplay') === 'true';
+
+    // --- Infinite Scroll State ---
+    const [accumulatedVerses, setAccumulatedVerses] = useState<Verse[]>(verses);
+    const prevChapterRef = useRef(chapter.id);
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (chapter.id !== prevChapterRef.current) {
+            setAccumulatedVerses(verses);
+            prevChapterRef.current = chapter.id;
+        } else {
+            setAccumulatedVerses(prev => {
+                const newVerses = verses.filter(v => !prev.some(p => p.verse_key === v.verse_key));
+                if (newVerses.length > 0) {
+                    return [...prev, ...newVerses];
+                }
+                return prev;
+            });
+        }
+    }, [verses, chapter.id]);
+
+    useEffect(() => {
+        if (typeof window === "undefined" || !('IntersectionObserver' in window)) return;
+        if (currentPage >= totalPages || isPending) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isPending) {
+                    startTransition(() => {
+                        const newUrl = new URL(window.location.href);
+                        newUrl.searchParams.set('page', (currentPage + 1).toString());
+                        router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+                    });
+                }
+            },
+            { threshold: 0.1, rootMargin: '800px' }
+        );
+
+        if (loadMoreRef.current) {
+            observer.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (loadMoreRef.current) {
+                observer.unobserve(loadMoreRef.current);
+            }
+        };
+    }, [currentPage, totalPages, isPending, router]);
 
     // --- Stats Tracking ---
     const readVersesRef = useRef<Set<string>>(new Set());
@@ -269,7 +318,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
 
     // Handle Autoplay from Surah List - Only on initial page load
     useEffect(() => {
-        if (autoplay && verses.length > 0 && !playingVerseKey && !autoplayExecuted) {
+        if (autoplay && accumulatedVerses.length > 0 && !playingVerseKey && !autoplayExecuted) {
             // Small delay to ensure everything is ready
             const timer = setTimeout(() => {
                 handleSurahPlay();
@@ -391,18 +440,18 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                 handleResume();
             }
         } else {
-            if (verses.length > 0) {
-                handleVersePlay(verses[0], true);
-                scrollToVerse(parseInt(verses[0].verse_key.split(':')[1]));
+            if (accumulatedVerses.length > 0) {
+                handleVersePlay(accumulatedVerses[0], true);
+                scrollToVerse(parseInt(accumulatedVerses[0].verse_key.split(':')[1]));
             }
         }
     };
 
     const handleNextVerse = () => {
         if (!playingVerseKey) return;
-        const currentIndex = verses.findIndex(v => v.verse_key === playingVerseKey);
-        if (currentIndex !== -1 && currentIndex < verses.length - 1) {
-            const nextVerse = verses[currentIndex + 1];
+        const currentIndex = accumulatedVerses.findIndex(v => v.verse_key === playingVerseKey);
+        if (currentIndex !== -1 && currentIndex < accumulatedVerses.length - 1) {
+            const nextVerse = accumulatedVerses[currentIndex + 1];
             // Keep isContinuous state whatever it was
             setPlayingVerseKey(nextVerse.verse_key);
             setCurrentAudioUrl(nextVerse.audio.url);
@@ -416,9 +465,9 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
 
     const handlePrevVerse = () => {
         if (!playingVerseKey) return;
-        const currentIndex = verses.findIndex(v => v.verse_key === playingVerseKey);
+        const currentIndex = accumulatedVerses.findIndex(v => v.verse_key === playingVerseKey);
         if (currentIndex > 0) {
-            const prevVerse = verses[currentIndex - 1];
+            const prevVerse = accumulatedVerses[currentIndex - 1];
             // Keep isContinuous state
             setPlayingVerseKey(prevVerse.verse_key);
             setCurrentAudioUrl(prevVerse.audio.url);
@@ -581,12 +630,12 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     };
 
     const displayedVerses = useMemo(() => {
-        const result = !searchQuery || !isNaN(parseInt(searchQuery)) ? verses : verses.filter(v =>
+        const result = !searchQuery || !isNaN(parseInt(searchQuery)) ? accumulatedVerses : accumulatedVerses.filter(v =>
             v.text_uthmani.includes(searchQuery) ||
             v.translations[0]?.text.toLowerCase().includes(searchQuery.toLowerCase())
         );
         return result;
-    }, [verses, searchQuery]);
+    }, [accumulatedVerses, searchQuery]);
 
     const getFontSizeClass = () => {
         switch (fontSize) {
@@ -599,10 +648,10 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
     // Prepare bookmark for dialog (draft takes precedence)
     const activeBookmark = editingBookmarkDraft ?? (editingBookmarkKey ? getBookmark(editingBookmarkKey) : null);
 
-    const currentPlayingIndex = playingVerseKey ? verses.findIndex(v => v.verse_key === playingVerseKey) : -1;
+    const currentPlayingIndex = playingVerseKey ? accumulatedVerses.findIndex(v => v.verse_key === playingVerseKey) : -1;
 
     // Safety check: if no verses, show error
-    if (!verses || verses.length === 0) {
+    if (!accumulatedVerses || accumulatedVerses.length === 0) {
         return (
             <div className="relative min-h-screen pb-16 w-full max-w-4xl mx-auto flex items-center justify-center">
                 <div className="text-center space-y-4 px-4">
@@ -713,6 +762,8 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                                                 setScriptType={setScriptType}
                                                 showTransliteration={showTransliteration}
                                                 setShowTransliteration={setShowTransliteration}
+                                                showWordByWord={showWordByWord}
+                                                setShowWordByWord={setShowWordByWord}
                                                 fontSize={fontSize}
                                                 setFontSize={setFontSize}
                                                 perPage={perPage}
@@ -739,7 +790,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                             <TajweedLegend />
                         </div>
                         <div className={`text-right ${getVerseFontClass(scriptType, fontSize)} text-slate-200`} dir="rtl">
-                            {verses.map((verse) => (
+                            {displayedVerses.map((verse) => (
                                 <span key={`mushaf-${verse.verse_key}`} className="inline relative" id={`verse-${parseInt(verse.verse_key.split(':')[1])}`}>
                                     <span className={cn(
                                         "hover:bg-[rgb(var(--color-primary))]/10 transition-colors rounded px-1 cursor-pointer",
@@ -757,30 +808,24 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                                 </span>
                             ))}
                         </div>
-                        {/* Pagination Controls (Mushaf Mode) */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between py-6 mt-4 border-t border-white/5" dir="ltr">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8 px-2 md:px-4"
-                                >
-                                    <ChevronLeft className="h-4 w-4 md:mr-2" />
-                                    <span className="hidden md:inline">{t.quranPrevious}</span>
-                                </Button>
-                                <span className="text-xs md:text-sm font-medium text-slate-400">
-                                    <span className="hidden md:inline">{t.quranPage} </span>{currentPage}{t.quranOf}{totalPages}
+                        {/* Infinite Scroll Trigger (Mushaf Mode) */}
+                        {currentPage < totalPages && (
+                            <div ref={loadMoreRef} className="flex justify-center items-center py-8">
+                                {isPending ? (
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Loader2 className="w-6 h-6 animate-spin text-[rgb(var(--color-primary))]" />
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-10 border-t border-white/5" />
+                                )}
+                            </div>
+                        )}
+                        {/* End of chapter indicator */}
+                        {currentPage >= totalPages && totalPages > 0 && (
+                            <div className="text-center py-8 border-t border-white/5 mx-4 md:mx-0">
+                                <span className="text-xs md:text-sm font-bold text-[rgb(var(--color-primary-light))] uppercase tracking-[0.2em] opacity-80 decoration-double">
+                                    صَدَقَ اللهُ العَظِيم
                                 </span>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8 px-2 md:px-4"
-                                >
-                                    <span className="hidden md:inline">{t.quranNext}</span>
-                                    <ChevronRight className="h-4 w-4 md:ml-2" />
-                                </Button>
                             </div>
                         )}
 
@@ -845,6 +890,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                                         scriptType={scriptType}
                                         fontSize={fontSize}
                                         showTransliteration={showTransliteration}
+                                        showWordByWord={showWordByWord}
                                         activeTafsirVerse={activeTafsirVerse}
                                         isLoadingTafsir={loadingTafsir.has(verse.verse_key)}
                                         tafsirData={tafsirCache.get(verse.verse_key)?.data}
@@ -869,30 +915,24 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                                 );
                             }
                         })}
-                        {/* Pagination Controls (List Mode) */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between py-6 px-4 mt-4 border-t border-white/5">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8 px-2 md:px-4"
-                                >
-                                    <ChevronLeft className="h-4 w-4 md:mr-2" />
-                                    <span className="hidden md:inline">{t.quranPrevious}</span>
-                                </Button>
-                                <span className="text-xs md:text-sm font-medium text-slate-400">
-                                    <span className="hidden md:inline">{t.quranPage} </span>{currentPage}{t.quranOf}{totalPages}
+                        {/* Infinite Scroll Trigger (List Mode) */}
+                        {currentPage < totalPages && (
+                            <div ref={loadMoreRef} className="flex justify-center items-center py-8 border-t border-white/5">
+                                {isPending ? (
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Loader2 className="w-6 h-6 animate-spin text-[rgb(var(--color-primary))]" />
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-10" />
+                                )}
+                            </div>
+                        )}
+                        {/* End of chapter indicator */}
+                        {currentPage >= totalPages && totalPages > 0 && (
+                            <div className="text-center py-8 border-t border-white/5 mx-4 md:mx-0">
+                                <span className="text-xs md:text-sm font-bold text-[rgb(var(--color-primary-light))] uppercase tracking-[0.2em] opacity-80 decoration-double">
+                                    صَدَقَ اللهُ العَظِيم
                                 </span>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8 px-2 md:px-4"
-                                >
-                                    <span className="hidden md:inline">{t.quranNext}</span>
-                                    <ChevronRight className="h-4 w-4 md:mr-2" />
-                                </Button>
                             </div>
                         )}
 
@@ -941,7 +981,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                     isPlaying={isPlaying}
                     loopMode={loopMode}
                     currentPlayingIndex={currentPlayingIndex}
-                    totalVerses={verses.length}
+                    totalVerses={accumulatedVerses.length}
                     isDaylight={isDaylight}
                     locale={locale}
                     onLoopModeChange={setLoopMode}
