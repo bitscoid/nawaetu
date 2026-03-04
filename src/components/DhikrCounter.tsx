@@ -19,10 +19,14 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { RotateCcw, Volume2, VolumeX, Smartphone, Settings2, Check, Flame, CalendarDays } from "lucide-react";
+import { RotateCcw, Volume2, VolumeX, Smartphone, Settings2, Check, Flame, CalendarDays, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { dhikrCategories, dhikrSequences } from "@/data/dhikrLibrary";
 import { addHasanah } from "@/lib/leveling";
 import { useLocale } from "@/context/LocaleContext";
 import { useDhikrPersistence } from "@/hooks/useDhikrPersistence";
@@ -96,15 +100,35 @@ export default function DhikrCounter() {
                 latin: t.tasbihPresetSholawatJibrilLatin,
                 tadabbur: t.tasbihPresetSholawatJibrilTadabbur,
                 target: 1000
+            },
+            {
+                id: "tahlil",
+                label: "Tahlil",
+                arab: "لَا إِلَٰهَ إِلَّا ٱللَّٰهُ",
+                latin: "Laa ilaaha illallaah",
+                tadabbur: "Tiada Tuhan selain Allah.",
+                target: 100
+            },
+            {
+                id: "hawqalah",
+                label: "Hawqalah",
+                arab: "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّٰهِ",
+                latin: "Laa hawla wa laa quwwata illaa billaah",
+                tadabbur: "Tiada daya dan upaya kecuali dengan pertolongan Allah.",
+                target: 100
             }
         ],
         [t]
     );
+
+    const libraryPresets = useMemo(() => dhikrCategories.flatMap(c => c.items), []);
+
     const [feedbackMode, setFeedbackMode] = useState<'vibrate' | 'sound' | 'both' | 'none'>('vibrate');
     const [isVibrationSupported, setIsVibrationSupported] = useState(true);
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [showReward, setShowReward] = useState(false);
+    const [expandedCategory, setExpandedCategory] = useState<string | null>("harian");
 
     useEffect(() => {
         // Deteksi apakah perangkat/browser mendukung getaran (contoh: iOS Safari dan beberapa in-app browser tidak)
@@ -116,11 +140,13 @@ export default function DhikrCounter() {
     }, []);
     const { state: dhikrState, updateState, hasHydrated } = useDhikrPersistence({
         defaultActiveId: dhikrPresets[0]?.id ?? "tasbih",
-        validActiveIds: dhikrPresets.map((preset) => preset.id),
+        validActiveIds: [...dhikrPresets, ...libraryPresets].map((preset) => preset.id),
         defaultTarget: 33
     });
-    const { count, target, activeDhikrId, dailyCount, streak, lastDhikrDate } = dhikrState;
-    const activeDhikr = dhikrPresets.find((dhikr) => dhikr.id === activeDhikrId) || null;
+    const { count, target, activeDhikrId, dailyCount, streak, lastDhikrDate, activeSequenceId, sequenceIndex } = dhikrState;
+    const allPresets = [...dhikrPresets, ...libraryPresets];
+    const activeDhikr = allPresets.find((dhikr) => dhikr.id === activeDhikrId) || null;
+    const activeSequence = dhikrSequences.find((seq) => seq.id === activeSequenceId) || null;
 
     const initAudio = () => {
         if (!audioContext && typeof window !== "undefined") {
@@ -136,13 +162,35 @@ export default function DhikrCounter() {
 
     useEffect(() => {
         if (target && count === target) {
+            // Check if we are in a sequence
+            if (activeSequence && activeSequence.items) {
+                if (sequenceIndex < activeSequence.items.length - 1) {
+                    // Auto advance
+                    setTimeout(() => {
+                        if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([400]);
+                        const nextDhikrId = activeSequence.items[sequenceIndex + 1];
+                        const nextDhikr = allPresets.find(p => p.id === nextDhikrId);
+                        if (nextDhikr) {
+                            updateState({
+                                count: 0,
+                                activeDhikrId: nextDhikr.id,
+                                target: nextDhikr.target,
+                                sequenceIndex: sequenceIndex + 1
+                            });
+                        }
+                    }, 100);
+                    return; // Do not show reward yet
+                }
+            }
+
+            // Normal completion or end of sequence
             setTimeout(() => {
                 addHasanah(50);
                 setShowReward(true);
                 if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }, 100);
         }
-    }, [count, target]);
+    }, [count, target, activeSequence, sequenceIndex, dhikrPresets, updateState]);
 
     const handleIncrement = () => {
         let ctx = audioContext;
@@ -184,7 +232,18 @@ export default function DhikrCounter() {
 
     const handleReset = () => {
         if (confirm(t.tasbihResetConfirm)) {
-            updateState({ count: 0 });
+            if (activeSequence) {
+                const firstDhikrId = activeSequence.items[0];
+                const firstDhikr = allPresets.find(p => p.id === firstDhikrId);
+                updateState({
+                    count: 0,
+                    sequenceIndex: 0,
+                    activeDhikrId: firstDhikr?.id || activeDhikrId,
+                    target: firstDhikr?.target || target
+                });
+            } else {
+                updateState({ count: 0 });
+            }
         }
     };
 
@@ -199,12 +258,28 @@ export default function DhikrCounter() {
     };
 
     const handlePresetSelect = (preset: DhikrPreset) => {
-        // Save preset and reset count immediately
         updateState({
             target: preset.target,
             activeDhikrId: preset.id,
+            activeSequenceId: null,
+            sequenceIndex: 0,
             count: 0
         });
+        setIsDialogOpen(false);
+    };
+
+    const handleSequenceSelect = (sequence: typeof dhikrSequences[0]) => {
+        const firstDhikrId = sequence.items[0];
+        const firstDhikr = allPresets.find(p => p.id === firstDhikrId);
+        if (firstDhikr) {
+            updateState({
+                target: firstDhikr.target,
+                activeDhikrId: firstDhikr.id,
+                activeSequenceId: sequence.id,
+                sequenceIndex: 0,
+                count: 0
+            });
+        }
         setIsDialogOpen(false);
     };
 
@@ -218,7 +293,15 @@ export default function DhikrCounter() {
             <div className="absolute inset-0 z-0 cursor-pointer active:bg-white/5 transition-colors" onClick={handleIncrement} />
 
             {/* Top: Branding + Zikir Text */}
-            <div className="w-full text-center z-10 pointer-events-none mt-1 xs:mt-6 shrink-0">
+            <div className="w-full text-center z-10 pointer-events-none mt-1 xs:mt-6 shrink-0 relative">
+                {activeSequence && (
+                    <div className={cn(
+                        "inline-flex items-center justify-center px-3 py-1 mb-2 rounded-full border text-[10px] font-bold tracking-widest uppercase shadow-sm",
+                        isDaylight ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-[rgb(var(--color-primary)/0.2)] text-[rgb(var(--color-primary-light))] border-[rgb(var(--color-primary)/0.3)] shadow-[0_0_15px_rgba(var(--color-primary),0.2)]"
+                    )}>
+                        {activeSequence.label} • {sequenceIndex + 1}/{activeSequence.items.length}
+                    </div>
+                )}
                 <div className="mb-0.5 xs:mb-2">
                     <h1 className={cn(
                         "text-lg xs:text-xl font-bold tracking-tight leading-tight",
@@ -394,24 +477,149 @@ export default function DhikrCounter() {
                             <DialogHeader>
                                 <DialogTitle className="text-center text-sm font-bold uppercase tracking-widest opacity-40">{t.tasbihListTitle}</DialogTitle>
                             </DialogHeader>
-                            <div className="flex flex-col gap-2 py-4">
-                                {dhikrPresets.map((p) => (
-                                    <Button
-                                        key={p.id}
-                                        variant="outline"
-                                        onClick={() => handlePresetSelect(p)}
-                                        className={cn(
-                                            "justify-between h-auto py-3 px-4 border-white/5 bg-white/5 rounded-2xl",
-                                            activeDhikr?.id === p.id && "bg-[rgb(var(--color-primary)/0.15)] border-[rgb(var(--color-primary)/0.3)] shadow-[inset_0_0_12px_rgba(var(--color-primary),0.05)]"
-                                        )}
-                                    >
-                                        <div className="flex flex-col items-start text-left">
-                                            <span className="font-bold text-sm">{p.label}</span>
-                                            <span className="text-[10px] text-white/30">{p.latin}</span>
+                            <div className="flex flex-col py-2 max-h-[60vh] overflow-y-auto pr-1 overflow-x-hidden">
+                                <div className="space-y-6 pb-4">
+
+                                    {/* Standalone Berantai (if only 1) */}
+                                    {dhikrSequences.length === 1 && (
+                                        <div className="space-y-2">
+                                            {dhikrSequences.map((seq) => (
+                                                <Button
+                                                    key={seq.id}
+                                                    variant="outline"
+                                                    onClick={() => handleSequenceSelect(seq)}
+                                                    className={cn(
+                                                        "justify-between h-auto py-3 px-4 w-full border-[rgb(var(--color-primary)/0.2)] bg-[rgb(var(--color-primary)/0.1)] rounded-2xl transition-all text-left shadow-sm",
+                                                        activeSequenceId === seq.id && "bg-[rgb(var(--color-primary)/0.25)] border-[rgb(var(--color-primary)/0.5)] shadow-[inset_0_0_15px_rgba(var(--color-primary),0.15)]"
+                                                    )}
+                                                >
+                                                    <div className="flex flex-col items-start w-full overflow-hidden">
+                                                        <span className="font-bold text-sm text-[rgb(var(--color-primary-light))] w-full truncate">{seq.label}</span>
+                                                        <span className="text-[10px] text-white/50 mt-0.5 truncate w-full">Otomatis lanjut ke dzikir berikutnya</span>
+                                                    </div>
+                                                </Button>
+                                            ))}
                                         </div>
-                                        <span className="text-[10px] font-mono opacity-20">{p.target}x</span>
-                                    </Button>
-                                ))}
+                                    )}
+
+                                    {/* Group: Harian */}
+                                    <div>
+                                        <button
+                                            onClick={() => setExpandedCategory(expandedCategory === "harian" ? null : "harian")}
+                                            className="w-full flex items-center justify-between gap-2 mb-3 px-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <div className="h-px bg-white/10 flex-1"></div>
+                                                <h3 className="text-[10px] font-bold opacity-70 uppercase tracking-widest text-left">Harian</h3>
+                                                <div className="h-px bg-white/10 flex-1"></div>
+                                            </div>
+                                            <ChevronDown className={cn("w-3.5 h-3.5 opacity-50 transition-transform duration-200", expandedCategory === "harian" ? "rotate-180" : "rotate-0")} />
+                                        </button>
+
+                                        {expandedCategory === "harian" && (
+                                            <div className="space-y-2 animate-in slide-in-from-top-2 fade-in duration-200">
+
+                                                {dhikrPresets.map((p) => (
+                                                    <Button
+                                                        key={p.id}
+                                                        variant="outline"
+                                                        onClick={() => handlePresetSelect(p)}
+                                                        className={cn(
+                                                            "justify-between h-auto py-3 px-4 border-white/5 bg-white/5 rounded-2xl w-full text-left",
+                                                            activeSequenceId === null && activeDhikr?.id === p.id && "bg-[rgb(var(--color-primary)/0.15)] border-[rgb(var(--color-primary)/0.3)] shadow-[inset_0_0_12px_rgba(var(--color-primary),0.05)]"
+                                                        )}
+                                                    >
+                                                        <div className="flex flex-col items-start w-[80%] overflow-hidden">
+                                                            <span className="font-bold text-sm w-full truncate">{p.label}</span>
+                                                            <span className="text-[10px] text-white/40 truncate w-full mt-0.5">{p.latin}</span>
+                                                        </div>
+                                                        <span className="text-[10px] font-mono opacity-30 ml-2 shrink-0">{p.target}x</span>
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Group: Categories from Library */}
+                                    {dhikrCategories.map(cat => (
+                                        <div key={cat.id}>
+                                            <button
+                                                onClick={() => setExpandedCategory(expandedCategory === cat.id ? null : cat.id)}
+                                                className="w-full flex items-center justify-between gap-2 mb-3 px-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2 flex-1">
+                                                    <div className="h-px bg-white/10 flex-1"></div>
+                                                    <h3 className="text-[10px] font-bold opacity-70 uppercase tracking-widest text-left">{cat.label}</h3>
+                                                    <div className="h-px bg-white/10 flex-1"></div>
+                                                </div>
+                                                <ChevronDown className={cn("w-3.5 h-3.5 opacity-50 transition-transform duration-200", expandedCategory === cat.id ? "rotate-180" : "rotate-0")} />
+                                            </button>
+
+                                            {expandedCategory === cat.id && (
+                                                <div className="space-y-2 animate-in slide-in-from-top-2 fade-in duration-200">
+
+                                                    {cat.items.map((p) => (
+                                                        <Button
+                                                            key={p.id}
+                                                            variant="outline"
+                                                            onClick={() => handlePresetSelect(p)}
+                                                            className={cn(
+                                                                "justify-between h-auto py-3 px-4 border-white/5 bg-white/5 rounded-2xl w-full text-left",
+                                                                activeSequenceId === null && activeDhikr?.id === p.id && "bg-[rgb(var(--color-primary)/0.15)] border-[rgb(var(--color-primary)/0.3)] shadow-[inset_0_0_12px_rgba(var(--color-primary),0.05)]"
+                                                            )}
+                                                        >
+                                                            <div className="flex flex-col items-start w-[80%] overflow-hidden">
+                                                                <span className="font-bold text-sm w-full truncate">{p.label}</span>
+                                                                <span className="text-[10px] text-white/40 truncate w-full mt-0.5">{p.latin}</span>
+                                                            </div>
+                                                            <span className="text-[10px] font-mono opacity-30 ml-2 shrink-0">{p.target}x</span>
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    {/* Group: Berantai (if > 1) */}
+                                    {dhikrSequences.length > 1 && (
+                                        <div>
+                                            <button
+                                                onClick={() => setExpandedCategory(expandedCategory === "berantai" ? null : "berantai")}
+                                                className="w-full flex items-center justify-between gap-2 mb-3 px-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2 flex-1">
+                                                    <div className="h-px bg-white/10 flex-1"></div>
+                                                    <h3 className="text-[10px] font-bold opacity-70 uppercase tracking-widest text-left">Berantai</h3>
+                                                    <div className="h-px bg-white/10 flex-1"></div>
+                                                </div>
+                                                <ChevronDown className={cn("w-3.5 h-3.5 opacity-50 transition-transform duration-200", expandedCategory === "berantai" ? "rotate-180" : "rotate-0")} />
+                                            </button>
+
+                                            {expandedCategory === "berantai" && (
+                                                <div className="space-y-2 animate-in slide-in-from-top-2 fade-in duration-200">
+
+                                                    {dhikrSequences.map((seq) => (
+                                                        <Button
+                                                            key={seq.id}
+                                                            variant="outline"
+                                                            onClick={() => handleSequenceSelect(seq)}
+                                                            className={cn(
+                                                                "justify-between h-auto py-3 px-4 w-full border-[rgb(var(--color-primary)/0.1)] bg-[rgb(var(--color-primary)/0.05)] rounded-2xl transition-all text-left",
+                                                                activeSequenceId === seq.id && "bg-[rgb(var(--color-primary)/0.2)] border-[rgb(var(--color-primary)/0.4)] shadow-[inset_0_0_15px_rgba(var(--color-primary),0.1)]"
+                                                            )}
+                                                        >
+                                                            <div className="flex flex-col items-start w-full overflow-hidden">
+                                                                <span className="font-bold text-sm text-[rgb(var(--color-primary-light))] w-full truncate">{seq.label}</span>
+                                                                <span className="text-[10px] text-white/50 mt-0.5 truncate w-full">Otomatis lanjut ke dzikir berikutnya</span>
+                                                            </div>
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                </div>
                             </div>
                         </DialogContent>
                     </Dialog>
@@ -435,11 +643,11 @@ export default function DhikrCounter() {
                             {feedbackMode === 'vibrate' ? t.tasbihVibrate : feedbackMode === 'sound' ? t.tasbihSound : feedbackMode === 'both' ? t.tasbihDual : t.tasbihMute}
                         </span>
                     </Button>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Achievement Layer */}
-            <Dialog open={showReward} onOpenChange={setShowReward}>
+            < Dialog open={showReward} onOpenChange={setShowReward} >
                 <DialogContent className="w-[85%] max-w-[280px] rounded-[32px] bg-neutral-900/95 border-[rgb(var(--color-primary)/0.2)] text-white backdrop-blur-2xl flex flex-col items-center p-5 md:p-6 text-center [&>button.absolute]:hidden shadow-2xl">
                     <DialogHeader className="flex flex-col items-center">
                         <div className="w-14 h-14 rounded-full bg-[rgb(var(--color-primary)/0.1)] flex items-center justify-center mb-4 border border-[rgb(var(--color-primary)/0.2)]">
@@ -451,9 +659,9 @@ export default function DhikrCounter() {
 
                     <div className="flex flex-row items-stretch gap-2.5 w-full">
                         {(() => {
-                            const currentIndex = activeDhikr ? dhikrPresets.findIndex(z => z.id === activeDhikr.id) : -1;
-                            const nextZikir = currentIndex !== -1 && currentIndex < dhikrPresets.length - 1
-                                ? dhikrPresets[currentIndex + 1]
+                            const currentIndex = activeDhikr ? allPresets.findIndex(z => z.id === activeDhikr.id) : -1;
+                            const nextZikir = currentIndex !== -1 && currentIndex < allPresets.length - 1
+                                ? allPresets[currentIndex + 1]
                                 : null;
 
                             return (
@@ -472,7 +680,21 @@ export default function DhikrCounter() {
                                             </Button>
                                             <Button
                                                 variant="ghost"
-                                                onClick={() => { updateState({ count: 0 }); setShowReward(false); }}
+                                                onClick={() => {
+                                                    if (activeSequence) {
+                                                        const firstDhikrId = activeSequence.items[0];
+                                                        const firstDhikr = allPresets.find(p => p.id === firstDhikrId);
+                                                        updateState({
+                                                            count: 0,
+                                                            sequenceIndex: 0,
+                                                            activeDhikrId: firstDhikr?.id || activeDhikrId,
+                                                            target: firstDhikr?.target || target
+                                                        });
+                                                    } else {
+                                                        updateState({ count: 0 });
+                                                    }
+                                                    setShowReward(false);
+                                                }}
                                                 className="flex-1 bg-white/5 hover:bg-white/10 text-white/50 border border-white/10 h-11 rounded-xl flex flex-row items-center justify-center gap-1.5 px-3"
                                             >
                                                 <RotateCcw className="h-3 w-3 opacity-70" />
@@ -481,7 +703,21 @@ export default function DhikrCounter() {
                                         </>
                                     ) : (
                                         <Button
-                                            onClick={() => { updateState({ count: 0 }); setShowReward(false); }}
+                                            onClick={() => {
+                                                if (activeSequence) {
+                                                    const firstDhikrId = activeSequence.items[0];
+                                                    const firstDhikr = allPresets.find(p => p.id === firstDhikrId);
+                                                    updateState({
+                                                        count: 0,
+                                                        sequenceIndex: 0,
+                                                        activeDhikrId: firstDhikr?.id || activeDhikrId,
+                                                        target: firstDhikr?.target || target
+                                                    });
+                                                } else {
+                                                    updateState({ count: 0 });
+                                                }
+                                                setShowReward(false);
+                                            }}
                                             className="bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary-light))] text-white font-bold h-11 rounded-xl w-full"
                                         >
                                             {t.tasbihRepeatReading}
@@ -492,7 +728,7 @@ export default function DhikrCounter() {
                         })()}
                     </div>
                 </DialogContent>
-            </Dialog>
-        </div>
+            </Dialog >
+        </div >
     );
 }

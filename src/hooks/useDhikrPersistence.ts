@@ -17,7 +17,29 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+
+export const STORAGE_KEYS = {
+    // ...existing...
+    DHIKR_COUNT: "nawaetu_dhikr_count",
+    DHIKR_TARGET: "nawaetu_dhikr_target",
+    DHIKR_ACTIVE_PRESET: "nawaetu_dhikr_active_preset",
+    DHIKR_DAILY_COUNT: "nawaetu_dhikr_daily_count",
+    DHIKR_STREAK: "nawaetu_dhikr_streak",
+    DHIKR_LAST_DATE: "nawaetu_dhikr_last_date",
+    DHIKR_SEQUENCE_ID: "nawaetu_dhikr_sequence_id",
+    DHIKR_SEQUENCE_INDEX: "nawaetu_dhikr_sequence_index",
+    DHIKR_CUSTOM_PRESETS: "nawaetu_dhikr_custom_presets",
+};
+
+
+export type DhikrPreset = {
+    id: string;
+    label: string;
+    arab: string;
+    latin: string;
+    tadabbur: string;
+    target: number;
+};
 
 type DhikrState = {
     count: number;
@@ -26,6 +48,9 @@ type DhikrState = {
     dailyCount: number;
     streak: number;
     lastDhikrDate: string;
+    activeSequenceId: string | null;
+    sequenceIndex: number;
+    customPresets: DhikrPreset[];
 };
 
 type UseDhikrPersistenceOptions = {
@@ -65,7 +90,10 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
         activeDhikrId: defaultActiveId,
         dailyCount: 0,
         streak: 0,
-        lastDhikrDate: ""
+        lastDhikrDate: "",
+        activeSequenceId: null,
+        sequenceIndex: 0,
+        customPresets: []
     });
     const [hasHydrated, setHasHydrated] = useState(false);
     const hasInitializedRef = useRef(false);
@@ -90,6 +118,19 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
         if (partial.lastDhikrDate !== undefined) {
             safeSetItem(STORAGE_KEYS.DHIKR_LAST_DATE, partial.lastDhikrDate);
         }
+        if (partial.activeSequenceId !== undefined) {
+            if (partial.activeSequenceId === null) {
+                safeRemoveItem(STORAGE_KEYS.DHIKR_SEQUENCE_ID);
+            } else {
+                safeSetItem(STORAGE_KEYS.DHIKR_SEQUENCE_ID, partial.activeSequenceId);
+            }
+        }
+        if (partial.sequenceIndex !== undefined && !isNaN(partial.sequenceIndex)) {
+            safeSetItem(STORAGE_KEYS.DHIKR_SEQUENCE_INDEX, partial.sequenceIndex.toString());
+        }
+        if (partial.customPresets !== undefined) {
+            safeSetItem(STORAGE_KEYS.DHIKR_CUSTOM_PRESETS, JSON.stringify(partial.customPresets));
+        }
     }, []);
 
     const persistAll = useCallback((nextState: DhikrState) => {
@@ -110,7 +151,8 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
             STORAGE_KEYS.DHIKR_COUNT,
             STORAGE_KEYS.DHIKR_TARGET,
             STORAGE_KEYS.DHIKR_DAILY_COUNT,
-            STORAGE_KEYS.DHIKR_STREAK
+            STORAGE_KEYS.DHIKR_STREAK,
+            STORAGE_KEYS.DHIKR_SEQUENCE_INDEX
         ];
 
         keysToClean.forEach((key) => {
@@ -126,8 +168,20 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
         const savedDaily = localStorage.getItem(STORAGE_KEYS.DHIKR_DAILY_COUNT);
         const savedStreak = localStorage.getItem(STORAGE_KEYS.DHIKR_STREAK);
         const savedDate = localStorage.getItem(STORAGE_KEYS.DHIKR_LAST_DATE);
+        const savedSequenceId = localStorage.getItem(STORAGE_KEYS.DHIKR_SEQUENCE_ID);
+        const savedSequenceIndex = localStorage.getItem(STORAGE_KEYS.DHIKR_SEQUENCE_INDEX);
+        const savedCustomPresetsString = localStorage.getItem(STORAGE_KEYS.DHIKR_CUSTOM_PRESETS);
 
-        const resolvedActiveId = savedDhikrId && validActiveIds.includes(savedDhikrId)
+        let parsedCustomPresets: DhikrPreset[] = [];
+        try {
+            if (savedCustomPresetsString) {
+                parsedCustomPresets = JSON.parse(savedCustomPresetsString);
+            }
+        } catch (e) {
+            console.error("Failed to parse custom presets", e);
+        }
+
+        const resolvedActiveId = savedDhikrId && (validActiveIds.includes(savedDhikrId) || parsedCustomPresets.some(p => p.id === savedDhikrId))
             ? savedDhikrId
             : defaultActiveId;
 
@@ -137,7 +191,10 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
             activeDhikrId: resolvedActiveId,
             dailyCount: parseNumber(savedDaily, 0),
             streak: parseNumber(savedStreak, 0),
-            lastDhikrDate: savedDate || today
+            lastDhikrDate: savedDate || today,
+            activeSequenceId: savedSequenceId,
+            sequenceIndex: parseNumber(savedSequenceIndex, 0),
+            customPresets: parsedCustomPresets
         };
 
         if (nextState.lastDhikrDate && nextState.lastDhikrDate !== today) {
@@ -173,10 +230,29 @@ export function useDhikrPersistence(options: UseDhikrPersistenceOptions) {
 
     useEffect(() => {
         if (!hasHydrated) return;
-        if (!validActiveIds.includes(state.activeDhikrId)) {
+        if (!validActiveIds.includes(state.activeDhikrId) && !state.customPresets.some(p => p.id === state.activeDhikrId)) {
             updateState({ activeDhikrId: defaultActiveId });
         }
-    }, [defaultActiveId, hasHydrated, state.activeDhikrId, updateState, validActiveIds]);
+    }, [defaultActiveId, hasHydrated, state.activeDhikrId, state.customPresets, updateState, validActiveIds]);
 
-    return { state, updateState, hasHydrated };
+    const addCustomPreset = useCallback((preset: Omit<DhikrPreset, 'id'>) => {
+        const newPreset: DhikrPreset = {
+            ...preset,
+            id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
+        };
+        updateState({
+            customPresets: [...state.customPresets, newPreset]
+        });
+        return newPreset;
+    }, [state.customPresets, updateState]);
+
+    const removeCustomPreset = useCallback((id: string) => {
+        const newPresets = state.customPresets.filter(p => p.id !== id);
+        updateState({
+            customPresets: newPresets,
+            activeDhikrId: state.activeDhikrId === id ? defaultActiveId : state.activeDhikrId
+        });
+    }, [state.customPresets, state.activeDhikrId, updateState, defaultActiveId]);
+
+    return { state, updateState, hasHydrated, addCustomPreset, removeCustomPreset };
 }
