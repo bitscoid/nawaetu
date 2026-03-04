@@ -610,6 +610,7 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
             });
         }
 
+
         if (!tafsirCache.has(verseKey)) {
             setLoadingTafsir(prev => new Set(prev).add(verseKey));
             try {

@@ -95,6 +95,7 @@ export default function BookmarkEditDialog({
                 timestamp: Date.now()
             };
             storage.set(STORAGE_KEYS.QURAN_LAST_READ as any, lastReadData);
+            window.dispatchEvent(new CustomEvent('nawaetu_storage_change', { detail: { key: STORAGE_KEYS.QURAN_LAST_READ } }));
         }
 
         onOpenChange(false);

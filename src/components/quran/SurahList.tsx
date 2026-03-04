@@ -163,7 +163,7 @@ export default function SurahList({ chapters }: SurahListProps) {
                     const safeLastRead = lastRead;
                     return (
                         <Link
-                            href={`/quran/${safeLastRead.surahId}?page=${targetPage}#${safeLastRead.surahId}:${safeLastRead.verseId}`}
+                            href={`/quran/${safeLastRead.surahId}?page=${targetPage}#verse-${safeLastRead.verseId}`}
                             onMouseEnter={() => prefetchSurah(safeLastRead.surahId)}
                             onFocus={() => prefetchSurah(safeLastRead.surahId)}
                             className={cn(

@@ -156,7 +156,7 @@ export default function LastReadWidget() {
     // === Has Last Read - Show Preview ===
     return (
         <div className="w-full h-full animate-in fade-in slide-in-from-bottom-2 duration-700 delay-200">
-            <Link href={`/quran/${lastRead.surahId}#${lastRead.surahId}:${lastRead.verseId}`} className="block group h-full">
+            <Link href={`/quran/${lastRead.surahId}#verse-${lastRead.verseId}`} className="block group h-full">
                 <div className="relative overflow-hidden rounded-3xl bg-black/20 backdrop-blur-md border border-white/10 p-4 sm:p-5 h-full flex flex-col justify-between transition-all duration-300 hover:bg-black/30 hover:border-white/20">
 
                     {/* Header: Label */}
