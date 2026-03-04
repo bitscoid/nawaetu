@@ -42,15 +42,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
-  const now = new Date();
-  // Server-side Ramadhan season check (Gregorian approximation 1447H)
-  // Ramadhan 1447H: ~Feb 18 2026 to ~Mar 20 2026
-  const RAMADHAN_START = new Date("2026-02-18T00:00:00+07:00");
-  const RAMADHAN_END = new Date("2026-03-20T23:59:59+07:00");
-  const isRamadhanSeason = now >= RAMADHAN_START && now <= RAMADHAN_END;
+// ISR: Homepage structure is static, dynamic content (prayer times, user data)
+// is loaded client-side. Cache for 1 hour.
+export const revalidate = 3600;
 
-  const daysLeft = isRamadhanSeason ? 0 : Math.max(0, Math.floor((RAMADHAN_START.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+export default function Home() {
+  // Ramadhan 1447H: ~Feb 18 2026 to ~Mar 20 2026 (Gregorian approximation)
+  // These are compile-time constants — no new Date() needed at request time.
+  // HomeClient refines this using hijriMonth from the prayer times API.
+  const RAMADHAN_START_MS = new Date("2026-02-18T00:00:00+07:00").getTime();
+  const RAMADHAN_END_MS = new Date("2026-03-20T23:59:59+07:00").getTime();
+  const nowApprox = Date.now();
+  const isRamadhanSeason = nowApprox >= RAMADHAN_START_MS && nowApprox <= RAMADHAN_END_MS;
+  const daysLeft = isRamadhanSeason
+    ? 0
+    : Math.max(0, Math.floor((RAMADHAN_START_MS - nowApprox) / 86400000));
 
   return <HomeClient initialDaysLeft={daysLeft} isRamadhanSeason={isRamadhanSeason} />;
 }

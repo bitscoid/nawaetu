@@ -1,64 +1,57 @@
+/**
+ * Nawaetu - Islamic Habit Tracker
+ * Copyright (C) 2026 Hadian Rahmat
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+/**
+ * Ultra-lightweight middleware.
+ *
+ * Security headers (CSP, HSTS, etc.) are now defined statically in
+ * next.config.ts → headers(), which is compiled into the CDN config and
+ * doesn't run per-request middleware runtime.
+ *
+ * This middleware only handles:
+ *   1. Blocking debug/test routes in production.
+ */
 export function middleware(request: NextRequest) {
-  let response = NextResponse.next();
-
   // Block debug/testing routes in production
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
-    const debugRoutes = ['/notification-debug', '/api/debug', '/api/notifications/debug'];
-
-    if (debugRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
-      response = NextResponse.rewrite(new URL('/404', request.url));
+    const path = request.nextUrl.pathname;
+    if (
+      path.startsWith('/notification-debug') ||
+      path.startsWith('/api/debug') ||
+      path.startsWith('/api/notifications/debug')
+    ) {
+      return NextResponse.rewrite(new URL('/404', request.url));
     }
   }
 
-  // Add performance and security headers
-  const headers = {
-
-    // Security headers
-    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-    'Permissions-Policy': 'geolocation=(self), magnetometer=(self), gyroscope=(self), accelerometer=(self)',
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'origin-when-cross-origin',
-    'X-XSS-Protection': '1; mode=block',
-
-    // Content Security Policy
-    'Content-Security-Policy': `
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://vercel.live;
-      worker-src 'self' blob:;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' data: https://*.google.com https://*.googleapis.com https://*.googletagmanager.com https://*.google-analytics.com https://avatar.vercel.sh https://lh3.googleusercontent.com https://cdn.islamic.network;
-      font-src 'self' data: https://fonts.gstatic.com;
-      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.aladhan.com https://*.sentry.io https://*.google-analytics.com https://quran-api-id.vercel.app https://api.quran.gading.dev https://api.quran.com https://api.bigdatacloud.net https://openrouter.ai https://cdn.islamic.network;
-      media-src 'self' https://raw.githubusercontent.com https://www.ayouby.com https://cdn.islamic.network;
-      frame-src 'self' https://*.google.com https://vercel.live;
-      frame-ancestors 'self' chrome-extension://* edge-extension://* moz-extension://* chrome-extension: edge-extension: moz-extension:;
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      upgrade-insecure-requests;
-    `.replace(/\s{2,}/g, ' ').trim(),
-  };
-
-  // Apply headers
-  Object.entries(headers).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * Only run on non-static request paths.
+     * Excludes: _next/static, _next/image, public assets, favicons.
+     * This is intentionally narrow — security headers are in next.config.ts.
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|.*\\.(?:js|css|json|png|jpg|jpeg|webp|svg|woff2?|webmanifest)).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public|.*\\.(?:js|css|json|png|jpg|jpeg|webp|svg|woff2?|webmanifest|ico)).*)',
   ],
 };

@@ -125,6 +125,12 @@ export async function GET(req: NextRequest) {
                     timestamp: readingState.lastReadAt?.getTime()
                 }
             } : null,
+        }, {
+            headers: {
+                // User-specific data — only cache in browser, not CDN
+                // 30s prevents refetch on rapid page navigations
+                'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+            },
         });
 
     } catch (error) {

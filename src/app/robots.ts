@@ -23,7 +23,17 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: ['/api/', '/admin/'],
+            disallow: [
+                '/api/',
+                '/admin/',
+                // User-specific pages — require login, cannot be meaningfully crawled
+                '/bookmarks',
+                '/settings',
+                '/stats',
+                '/journal',
+                '/hadith',
+                '/notification-debug',
+            ],
         },
         sitemap: 'https://nawaetu.com/sitemap.xml',
     }

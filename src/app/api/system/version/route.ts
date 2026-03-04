@@ -19,11 +19,12 @@
 import { NextResponse } from "next/server";
 import { APP_CONFIG } from "@/config/app-config";
 
-export const dynamic = "force-dynamic"; // Ensure this is not cached at build time
+// Version is fixed per-deploy — cache at CDN for 1 hour
+export const revalidate = 3600;
 
 export async function GET() {
-    return NextResponse.json({
-        version: APP_CONFIG.version, // This comes from the server-side build
-        generatedAt: new Date().toISOString()
-    });
+    return NextResponse.json(
+        { version: APP_CONFIG.version },
+        { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+    );
 }

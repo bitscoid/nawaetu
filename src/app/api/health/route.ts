@@ -45,7 +45,11 @@ export async function GET() {
     };
 
     return NextResponse.json(healthData, {
-        status: dbStatus.success ? 200 : 503
+        status: dbStatus.success ? 200 : 503,
+        headers: {
+            // Cache at edge for 30s — health checks don't need real-time freshness
+            'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=30',
+        },
     });
 }
 

@@ -20,6 +20,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Compass, MessageSquare, Target, Zap, Heart } from "lucide-react";
 
+// ISR: Static marketing page — cache for 7 days
+export const revalidate = 604800;
+
 export const metadata: Metadata = {
     title: "Tentang Nawaetu - Aplikasi Muslim Lengkap #NiatAjaDulu",
     description: "Nawaetu adalah aplikasi Muslim lengkap yang membantu Anda membangun kebiasaan ibadah dengan gamifikasi. Dilengkapi Jadwal Sholat, Al Quran Online, Arah Kiblat, Tasbih Digital, dan Asisten AI. Gratis!",

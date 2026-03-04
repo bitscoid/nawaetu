@@ -19,8 +19,11 @@
 import { NextResponse } from "next/server";
 import { buildManifest } from "@/app/_manifest";
 
-export const dynamic = "force-dynamic";
+// Manifest is fully static per-deploy — cache for 1 hour
+export const revalidate = 3600;
 
 export async function GET() {
-  return NextResponse.json(buildManifest());
+  return NextResponse.json(buildManifest(), {
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+  });
 }

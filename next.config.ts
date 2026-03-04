@@ -107,44 +107,68 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Force SW to not cache
+  // Force SW to not cache + Static security headers (moved from middleware for zero per-request CPU cost)
   async headers() {
+    // Shared security headers applied to ALL routes
+    const securityHeaders = [
+      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+      { key: 'Permissions-Policy', value: 'geolocation=(self), magnetometer=(self), gyroscope=(self), accelerometer=(self)' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+      { key: 'X-XSS-Protection', value: '1; mode=block' },
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://vercel.live",
+          "worker-src 'self' blob:",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "img-src 'self' data: https://*.google.com https://*.googleapis.com https://*.googletagmanager.com https://*.google-analytics.com https://avatar.vercel.sh https://lh3.googleusercontent.com https://cdn.islamic.network",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.aladhan.com https://*.sentry.io https://*.google-analytics.com https://quran-api-id.vercel.app https://api.quran.gading.dev https://api.quran.com https://api.bigdatacloud.net https://openrouter.ai https://cdn.islamic.network",
+          "media-src 'self' https://raw.githubusercontent.com https://www.ayouby.com https://cdn.islamic.network",
+          "frame-src 'self' https://*.google.com https://vercel.live",
+          "frame-ancestors 'self' chrome-extension://* edge-extension://* moz-extension://* chrome-extension: edge-extension: moz-extension:",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "upgrade-insecure-requests",
+        ].join('; '),
+      },
+    ];
+
     return [
+      // Security headers on all routes
       {
-        source: "/manifest.webmanifest",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+      // SW files — no cache
+      {
+        source: '/manifest.webmanifest',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
       },
       {
-        source: "/manifest.json",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
+        source: '/manifest.json',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
       },
       {
-        source: "/sw.js",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
+        source: '/sw.js',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
       },
       {
-        source: "/workbox-:hash.js",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
+        source: '/workbox-:hash.js',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
+      },
+      // Public static assets — long cache (content-hashed by Next.js)
+      {
+        source: '/_next/static/(.*)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      // Disallow robots from user-specific authored pages
+      {
+        source: '/(bookmarks|settings|stats|journal|hadith)(.*)',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
     ];
   },

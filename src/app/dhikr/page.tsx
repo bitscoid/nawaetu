@@ -21,6 +21,9 @@ import DhikrCounter from "@/components/DhikrCounter";
 import { Loader2 } from "lucide-react";
 import { Metadata } from "next";
 
+// ISR: Page shell is static, state is client-side — cache for 1 hour
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
     title: "Tasbih Digital Online - Counter Dzikir Gratis | Nawaetu",
     description: "Tasbih digital online untuk dzikir harian. Counter tasbih gratis dengan fitur simpan otomatis, target dzikir, dan riwayat. Praktis untuk Subhanallah, Alhamdulillah, Allahu Akbar.",

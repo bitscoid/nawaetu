@@ -20,7 +20,14 @@ import { Suspense } from "react";
 import VerseBrowser from "@/components/quran/VerseBrowser";
 import VerseListSkeleton from "@/components/skeleton/VerseListSkeleton";
 
-export const dynamic = 'force-dynamic';
+// ISR: Quran content is static — build once, serve forever
+// Pre-generate all 114 surahs at build time. Cache for 7 days.
+export const revalidate = 604800;
+
+export async function generateStaticParams() {
+    // Pre-build all 114 surahs at build time → zero CPU cost per request
+    return Array.from({ length: 114 }, (_, i) => ({ id: String(i + 1) }));
+}
 
 interface PageProps {
     params: Promise<{ id: string }>;
