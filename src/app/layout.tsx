@@ -240,6 +240,7 @@ import AppOverlays from "@/components/AppOverlays";
 import Toploader from "@/components/ui/Toploader";
 import DynamicTitle from "@/components/DynamicTitle";
 import ChunkErrorHandler from "@/components/ChunkErrorHandler";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
   children,
@@ -302,6 +303,7 @@ export default function RootLayout({
                     <PatternOverlay />
                     <DeferredLayoutComponents />
                     {children}
+                    <SpeedInsights />
 
                     <Suspense fallback={null}>
                       <BottomNav />
