@@ -17,7 +17,7 @@
  */
 
 import { toArabicNumber } from "@/lib/quran-utils";
-import { Play, Pause, ChevronLeft, ChevronRight, Repeat, Infinity as InfinityIcon } from "lucide-react";
+import { Play, Pause, ChevronLeft, ChevronRight, Repeat, Infinity as InfinityIcon, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/context/LocaleContext";
@@ -36,6 +36,7 @@ interface AudioPlayerBarProps {
     onPrev: () => void;
     onNext: () => void;
     onPlayPause: () => void;
+    onScrollToPlaying?: () => void;
 }
 
 export default function AudioPlayerBar({
@@ -49,7 +50,8 @@ export default function AudioPlayerBar({
     onLoopModeChange,
     onPrev,
     onNext,
-    onPlayPause
+    onPlayPause,
+    onScrollToPlaying
 }: AudioPlayerBarProps) {
     const { t } = useLocale();
 
@@ -68,6 +70,17 @@ export default function AudioPlayerBar({
                 </div>
                 <div className="h-8 w-px bg-white/10" />
                 <div className="flex items-center gap-1">
+                    {onScrollToPlaying && (
+                        <Button
+                            onClick={onScrollToPlaying}
+                            size="icon"
+                            variant="ghost"
+                            title={t.quranJumpToVerse || "Jump to playing verse"}
+                            className="h-8 w-8 rounded-full text-slate-400 hover:text-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary))]/10 mr-1"
+                        >
+                            <Target className="h-4 w-4" />
+                        </Button>
+                    )}
                     <Button
                         onClick={() => {
                             const modes: LoopMode[] = ['off', '1', '3', 'infinity'];

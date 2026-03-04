@@ -18,7 +18,7 @@
 
 import { Verse } from "./VerseList";
 import { AyahMarker } from "./AyahMarker";
-import { Play, Bookmark, Share2, Lightbulb, Loader2 } from "lucide-react";
+import { Link2, MoreVertical, Play, Pause, Bookmark, Info, Check, EyeOff, Eye, Share2, Lightbulb, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type TafsirContent } from "@/lib/tafsir-api";
@@ -57,6 +57,7 @@ interface VerseCardProps {
 // Note: We need to export cleanTajweedText from sanitize or rename if needed.
 // Wait, cleanTajweedText is imported from sanitize in VerseList.
 import { cleanTajweedText as sanitizeTajweedText } from "@/lib/sanitize";
+import { useState } from "react";
 
 export default function VerseCard({
     verse,
@@ -80,6 +81,7 @@ export default function VerseCard({
     prefetchShareDialog
 }: VerseCardProps) {
     const { t } = useLocale();
+    const [isMasked, setIsMasked] = useState(false);
 
     return (
         <div
@@ -98,6 +100,18 @@ export default function VerseCard({
             <div className="flex items-center justify-between mb-6">
                 <AyahMarker number={toArabicNumber(verseNum)} size={fontSize} />
                 <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsMasked(!isMasked)}
+                        className={cn(
+                            "h-8 w-8 md:h-9 md:w-9 rounded-full transition-colors",
+                            isMasked ? "text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20" : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10"
+                        )}
+                        title={isMasked ? "Buka Ayat (Mode Hafalan)" : "Tutup Ayat (Mode Hafalan)"}
+                    >
+                        {isMasked ? <Eye className="h-4 w-4 md:h-5 md:w-5" /> : <EyeOff className="h-4 w-4 md:h-5 md:w-5" />}
+                    </Button>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -151,7 +165,15 @@ export default function VerseCard({
             </div>
 
             {/* Content */}
-            <div dir="rtl" className={`w-full ${getVerseFontClass(scriptType, fontSize)} text-right mb-6 text-slate-200`}>
+            <div
+                dir="rtl"
+                onClick={() => isMasked && setIsMasked(false)}
+                className={cn(
+                    "w-full text-right mb-6 transition-all duration-300 relative",
+                    getVerseFontClass(scriptType, fontSize),
+                    isMasked ? "blur-md opacity-40 hover:opacity-60 cursor-pointer select-none" : "text-slate-200"
+                )}
+            >
                 {scriptType === 'tajweed' && verse.text_uthmani_tajweed ? (
                     <span dangerouslySetInnerHTML={{ __html: sanitizeTajweedText(verse.text_uthmani_tajweed) }} />
                 ) : (
@@ -160,9 +182,28 @@ export default function VerseCard({
             </div>
             <div className="space-y-3">
                 {showTransliteration && verse.transliteration && (
-                    <p className="text-[rgb(var(--color-primary-light))] text-sm md:text-base font-medium leading-relaxed">{verse.transliteration}</p>
+                    <p
+                        onClick={() => isMasked && setIsMasked(false)}
+                        className={cn(
+                            "text-[rgb(var(--color-primary-light))] text-sm md:text-base font-medium leading-relaxed transition-all duration-300",
+                            isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
+                        )}
+                    >
+                        {verse.transliteration}
+                    </p>
                 )}
-                <p className="text-slate-400 text-sm md:text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: cleanTranslation(verse.translations[0]?.text || "") }} />
+                <div
+                    onClick={() => isMasked && setIsMasked(false)}
+                    className={cn(
+                        "transition-all duration-300",
+                        isMasked && "blur-sm opacity-40 hover:opacity-60 cursor-pointer select-none"
+                    )}
+                >
+                    <p
+                        className="text-sm md:text-base leading-relaxed text-slate-400"
+                        dangerouslySetInnerHTML={{ __html: cleanTranslation(verse.translations[0]?.text || "") }}
+                    />
+                </div>
 
                 <div className={activeTafsirVerse === verse.verse_key ? 'mt-6 p-5 rounded-2xl bg-gradient-to-br from-[rgb(var(--color-primary))]/5 to-slate-900 border border-[rgb(var(--color-primary))]/20 animate-in slide-in-from-top-2' : 'hidden'}>
                     <div className="flex items-center gap-2 mb-3">

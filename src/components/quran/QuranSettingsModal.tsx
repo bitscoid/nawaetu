@@ -116,6 +116,7 @@ export default function QuranSettingsModal({
                                 <Switch checked={showTransliteration} onCheckedChange={setShowTransliteration} className="quran-toggle" />
                             </div>
                         </div>
+
                         {/* Font Size */}
                         <div className="space-y-3">
                             <Label className="text-[rgb(var(--color-primary-light))] text-[10px] font-bold uppercase tracking-[0.15em] opacity-60 ml-1">{t.quranFontSize}</Label>

@@ -377,6 +377,8 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
             setCurrentAudioUrl(verse.audio.url);
             setIsPlaying(true);
             setRepeatCount(0); // Reset repeat on new play
+            // Auto-scroll when specifically playing a verse
+            scrollToVerse(parseInt(verse.verse_key.split(':')[1]));
         }
     };
 
@@ -431,6 +433,9 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
             if (audioRef.current) {
                 audioRef.current.currentTime = 0;
                 audioRef.current.play();
+                if (playingVerseKey) {
+                    scrollToVerse(parseInt(playingVerseKey.split(':')[1]));
+                }
             }
             return;
         }
@@ -441,6 +446,9 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
             if (audioRef.current) {
                 audioRef.current.currentTime = 0;
                 audioRef.current.play();
+                if (playingVerseKey) {
+                    scrollToVerse(parseInt(playingVerseKey.split(':')[1]));
+                }
             }
             return;
         }
@@ -907,6 +915,11 @@ export default function VerseList({ chapter, verses, audioUrl, currentPage, tota
                 onPrev={handlePrevVerse}
                 onNext={handleNextVerse}
                 onPlayPause={isPlaying ? handlePause : handleResume}
+                onScrollToPlaying={() => {
+                    if (playingVerseKey) {
+                        scrollToVerse(parseInt(playingVerseKey.split(':')[1]));
+                    }
+                }}
             />
 
             {/* Hidden Audio Element */}
