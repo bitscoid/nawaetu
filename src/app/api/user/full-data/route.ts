@@ -127,9 +127,9 @@ export async function GET(req: NextRequest) {
             } : null,
         }, {
             headers: {
-                // User-specific data — only cache in browser, not CDN
-                // 30s prevents refetch on rapid page navigations
-                'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+                // no-store: auth-dependent data; should never be stale at CDN or browser cache
+                // (avoids 401 responses being cached and breaking GuestSyncManager after login)
+                'Cache-Control': 'no-store',
             },
         });
 
