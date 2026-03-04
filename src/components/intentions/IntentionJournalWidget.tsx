@@ -310,12 +310,18 @@ export default function IntentionJournalWidget({ className = "" }: IntentionJour
 
                         {/* Date Selector */}
                         <div
-                            onClick={() => dateInputRef.current?.showPicker()}
+                            onClick={(e) => {
+                                try {
+                                    dateInputRef.current?.showPicker();
+                                } catch (e) {
+                                    dateInputRef.current?.focus();
+                                }
+                            }}
                             className="relative shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group/date"
                         >
-                            <Calendar className={cn("w-3 h-3 transition-colors pointer-events-none", isDaylight ? "text-slate-400 group-hover/date:text-slate-600" : "text-white/40 group-hover/date:text-white/70")} />
+                            <Calendar className={cn("w-3 h-3 transition-colors", isDaylight ? "text-slate-400 group-hover/date:text-slate-600" : "text-white/40 group-hover/date:text-white/70")} />
                             <span className={cn(
-                                "text-[9px] font-bold uppercase transition-colors pointer-events-none",
+                                "text-[9px] font-bold uppercase transition-colors",
                                 isDaylight
                                     ? "text-slate-400 group-hover/date:text-slate-600"
                                     : "text-white/40 group-hover/date:text-white/70"
@@ -336,7 +342,7 @@ export default function IntentionJournalWidget({ className = "" }: IntentionJour
                                         setSelectedDate(e.target.value);
                                     }
                                 }}
-                                className="absolute inset-0 opacity-0 cursor-pointer pointer-events-none"
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                                 style={{ colorScheme: isDaylight ? 'light' : 'dark' }}
                             />
                         </div>

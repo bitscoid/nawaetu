@@ -43,9 +43,9 @@ const isValidCoords = (lat: unknown, lng: unknown) =>
 
 const isFreshLocation = (cachedLocation: any) => {
     if (!cachedLocation || typeof cachedLocation !== 'object') return false;
-    const { lat, lng, timestamp } = cachedLocation as { lat?: number; lng?: number; timestamp?: number };
+    const { lat, lng } = cachedLocation as { lat?: number; lng?: number; timestamp?: number };
     if (!isValidCoords(lat, lng)) return false;
-    if (typeof timestamp === 'number' && (Date.now() - timestamp > LOCATION_CACHE_TTL_MS)) return false;
+    // Remove the strict 30-day `LOCATION_CACHE_TTL_MS` check so users aren't met with an empty "lokasi wajib" screen.
     return true;
 };
 
@@ -397,7 +397,8 @@ export function usePrayerTimes(): UsePrayerTimesResult {
             storage.remove(STORAGE_KEYS.USER_LOCATION as any);
         }
 
-        if (existingPrayerData?.isDefault) {
+        // Unconditionally clear PRAYER_DATA so that fetchPrayerTimes doesn't early-return based on cache.
+        if (existingPrayerData) {
             storage.remove(STORAGE_KEYS.PRAYER_DATA as any);
         }
 
@@ -442,6 +443,8 @@ export function usePrayerTimes(): UsePrayerTimesResult {
             } else {
                 setLoading(false); // Data is fresh, no need to fetch
             }
+        } else {
+            setLoading(false); // No cached location found, end loading to show the location screen
         }
 
         // 3. Listen for global updates
