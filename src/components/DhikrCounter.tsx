@@ -19,7 +19,8 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { RotateCcw, Volume2, VolumeX, Smartphone, Settings2, Check, Flame, CalendarDays, ChevronDown, Trophy, Medal } from "lucide-react";
+import { createPortal } from "react-dom";
+import { RotateCcw, Volume2, VolumeX, Smartphone, Settings2, Check, Flame, CalendarDays, ChevronDown, Trophy, Medal, Moon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -132,6 +133,8 @@ export default function DhikrCounter() {
     const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
     const [showReward, setShowReward] = useState(false);
     const [expandedCategory, setExpandedCategory] = useState<string | null>("harian");
+    const [isZenMode, setIsZenMode] = useState(false);
+    const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
 
     useEffect(() => {
         // Deteksi apakah perangkat/browser mendukung getaran (contoh: iOS Safari dan beberapa in-app browser tidak)
@@ -195,7 +198,18 @@ export default function DhikrCounter() {
         }
     }, [count, target, activeSequence, sequenceIndex, dhikrPresets, updateState]);
 
-    const handleIncrement = () => {
+    const handleIncrement = (e?: React.MouseEvent | React.TouchEvent) => {
+        // Handle ripple effect for Zen Mode
+        if (isZenMode && e) {
+            const id = Date.now();
+            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+            setRipples(prev => [...prev.slice(-5), { id, x: clientX, y: clientY }]);
+            setTimeout(() => {
+                setRipples(prev => prev.filter(r => r.id !== id));
+            }, 600);
+        }
+
         let ctx = audioContext;
         if (!ctx) ctx = initAudio();
         if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -317,8 +331,71 @@ export default function DhikrCounter() {
     const FeedbackIcon = { vibrate: Smartphone, sound: Volume2, both: Volume2, none: VolumeX }[feedbackMode] || Smartphone;
     const progress = target && hasHydrated ? (count / target) * 100 : 0;
 
+    const zenModeUI = isZenMode ? (
+        <div className="fixed inset-0 z-[9999] bg-black text-white flex flex-col items-center justify-center overflow-hidden">
+            {/* Full screen tap area */}
+            <div className="absolute inset-0 cursor-pointer active:bg-white/5 transition-colors" onClick={(e) => handleIncrement(e)} />
+
+            {/* Ripples */}
+            {ripples.map(ripple => (
+                <div
+                    key={ripple.id}
+                    className="absolute rounded-full bg-[rgb(var(--color-primary)/0.2)] pointer-events-none animate-ripple"
+                    style={{
+                        left: ripple.x,
+                        top: ripple.y,
+                        width: '20px',
+                        height: '20px',
+                        transform: 'translate(-50%, -50%)',
+                    }}
+                />
+            ))}
+
+            {/* Close Button */}
+            <button
+                onClick={() => setIsZenMode(false)}
+                className="absolute top-8 right-6 z-[110] p-4 rounded-full opacity-20 hover:opacity-100 hover:bg-white/10 active:scale-95 transition-all text-white/50 hover:text-white"
+            >
+                <X className="w-8 h-8" />
+            </button>
+
+            {/* Counter Content */}
+            <div className="relative z-10 flex flex-col items-center pointer-events-none mt-[-10vh]">
+                <span className="text-[12px] md:text-sm font-bold tracking-widest uppercase mb-4 text-white/20">
+                    {activeDhikr ? activeDhikr.label : t.tasbihCounterLabel}
+                </span>
+
+                <span className="text-[120px] leading-none xs:text-[140px] md:text-[180px] font-mono font-bold tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                    {hasHydrated ? count : "..."}
+                </span>
+
+                {target && (
+                    <span className="text-white/30 text-2xl md:text-3xl font-mono mt-2">
+                        / {target}
+                    </span>
+                )}
+
+                <div className="mt-16 text-xs md:text-sm animate-pulse font-medium text-white/20 tracking-widest uppercase">
+                    {t.tasbihTap || "Ketuk Layar"}
+                </div>
+            </div>
+
+            {/* Feedback Toggle */}
+            <button
+                onClick={(e) => { e.stopPropagation(); toggleFeedback(); }}
+                className="absolute bottom-8 right-6 z-[110] p-4 rounded-full opacity-30 hover:opacity-100 hover:bg-white/10 active:scale-95 transition-all text-white/50 hover:text-white flex flex-col items-center gap-1.5"
+            >
+                <FeedbackIcon className="w-5 h-5" />
+                <span className="text-[8px] font-medium uppercase tracking-tighter opacity-70">
+                    {feedbackMode === 'vibrate' ? t.tasbihVibrate : feedbackMode === 'sound' ? t.tasbihSound : feedbackMode === 'both' ? t.tasbihDual : t.tasbihMute}
+                </span>
+            </button>
+        </div>
+    ) : null;
+
     return (
         <div className="flex flex-col items-center w-full h-full relative px-4 pb-nav pt-4 overflow-hidden">
+            {isZenMode && typeof document !== 'undefined' && createPortal(zenModeUI, document.body)}
 
             {/* Tap Area Overlay */}
             <div className="absolute inset-0 z-0 cursor-pointer active:bg-white/5 transition-colors" onClick={handleIncrement} />
@@ -560,7 +637,7 @@ export default function DhikrCounter() {
                 </Dialog>
 
                 {/* Control Grid */}
-                <div className="grid grid-cols-3 gap-3 w-full max-w-[320px] pointer-events-auto px-2">
+                <div className="grid grid-cols-4 gap-2 w-full max-w-[360px] pointer-events-auto px-2">
                     <Button
                         variant="ghost"
                         onClick={(e) => { e.stopPropagation(); handleReset(); }}
@@ -737,6 +814,25 @@ export default function DhikrCounter() {
                             </div>
                         </DialogContent>
                     </Dialog>
+
+                    <Button
+                        variant="ghost"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsZenMode(true);
+                            // Ensure feedback is on for "feel"
+                            if (feedbackMode === 'none') {
+                                setFeedbackMode(isVibrationSupported ? 'both' : 'sound');
+                            }
+                        }}
+                        className={cn(
+                            "flex flex-col h-auto py-3 gap-1 rounded-2xl border transition-colors",
+                            isDaylight ? "bg-white shadow-sm border-slate-200 hover:bg-slate-50" : "bg-white/5 hover:bg-white/10 border-white/5"
+                        )}
+                    >
+                        <Moon className={cn("h-4 w-4", isDaylight ? "text-slate-400" : "text-white/60")} />
+                        <span className={cn("text-[10px] font-medium", isDaylight ? "text-slate-500" : "text-white/40")}>Mode Zen</span>
+                    </Button>
 
                     <Button
                         variant="ghost"
