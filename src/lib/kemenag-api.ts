@@ -174,7 +174,7 @@ export const getKemenagVerses = cache(
 
       // Single API call - use quran.com only (faster, no dual API bottleneck)
       // quran.com API has everything we need: Arabic text + translations + harakat + transliteration
-      const apiUrl = `${API_CONFIG.QURAN_COM.BASE_URL}/verses/by_chapter/${chapterId}?language=${locale}&words=true&word_fields=text_uthmani,text_indopak&translations=${translationId}&fields=text_uthmani,text_uthmani_tajweed&page=${page}&per_page=${perPage}`;
+      const apiUrl = `${API_CONFIG.QURAN_COM.BASE_URL}/verses/by_chapter/${chapterId}?language=${locale}&word_translation_language=${locale}&words=true&word_fields=text_uthmani,text_indopak&translations=${translationId}&fields=text_uthmani,text_uthmani_tajweed&page=${page}&per_page=${perPage}`;
 
       const startTime = Date.now();
       const res = await fetchWithTimeout(
@@ -358,7 +358,7 @@ export const searchVerses = cache(async (query: string, page: number = 1, locale
 
   try {
     const res = await fetchWithTimeout(
-      `${API_CONFIG.QURAN_COM.BASE_URL}/search?q=${encodeURIComponent(query)}&language=${locale}&size=${size}&page=${page}`,
+      `${API_CONFIG.QURAN_COM.BASE_URL}/search?q=${encodeURIComponent(query)}&language=${locale}&word_translation_language=${locale}&size=${size}&page=${page}`,
       { next: { revalidate: 3600 } },
       { timeoutMs: 15000 }
     );
