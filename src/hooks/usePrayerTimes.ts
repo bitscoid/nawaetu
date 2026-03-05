@@ -178,16 +178,18 @@ export function usePrayerTimes(): UsePrayerTimesResult {
 
             // Get current settings to validate cache
             const savedMethod = storage.getOptional<string>(STORAGE_KEYS.SETTINGS_CALCULATION_METHOD as any);
-            const method = (typeof savedMethod === 'string' ? savedMethod : savedMethod) || "20";
+            const method = String(savedMethod || "20");
             const savedAdjustment = storage.getOptional<string>(STORAGE_KEYS.SETTINGS_HIJRI_ADJUSTMENT as any);
             const adjustment = (typeof savedAdjustment === 'string' ? savedAdjustment : savedAdjustment) || "-1";
 
-            const savedMethodCache = cachedData.method || "20";
-            const savedAdjustmentCache = cachedData.adjustment || "0";
+            const savedMethodCache = String(cachedData.method || "20");
+            const savedAdjustmentCache = String(cachedData.adjustment || "0");
             const savedTuneVersion = cachedData.tuneVersion;
 
             if (date === today && savedData && savedMethodCache === method && savedAdjustmentCache === adjustment && savedTuneVersion === TUNE_VERSION) {
                 processData(savedData, locationName || "Lokasi Tersimpan", true, !!isDefault);
+            } else if (storage.getOptional<any>(STORAGE_KEYS.USER_LOCATION as any)) {
+                // cache is strictly invalid (method mismatch, date mismatch), we wait for the fetch if location is valid
             }
         }
     }, [processData]);
@@ -235,7 +237,6 @@ export function usePrayerTimes(): UsePrayerTimesResult {
                 }
             }
 
-            // Get calculation method from settings
             let savedMethod = storage.getOptional<string>(STORAGE_KEYS.SETTINGS_CALCULATION_METHOD as any);
 
             // Smart Default Calculation Method based on coordinate regions
@@ -256,11 +257,11 @@ export function usePrayerTimes(): UsePrayerTimesResult {
                 storage.set(STORAGE_KEYS.SETTINGS_CALCULATION_METHOD as any, savedMethod);
             }
 
-            const method = typeof savedMethod === 'string' ? savedMethod : "3";
+            const method = String(savedMethod || "3");
 
             // Get Hijri adjustment from settings (default: -1)
             const savedAdjustment = storage.getOptional<string>(STORAGE_KEYS.SETTINGS_HIJRI_ADJUSTMENT as any);
-            const adjustment = (typeof savedAdjustment === 'string' ? savedAdjustment : savedAdjustment) || "-1";
+            const adjustment = String(savedAdjustment || "-1");
 
             // Check cache first
             const cachedData = storage.getOptional<any>(STORAGE_KEYS.PRAYER_DATA as any);
@@ -268,8 +269,8 @@ export function usePrayerTimes(): UsePrayerTimesResult {
                 const date = cachedData.date;
                 const savedData = cachedData.data;
                 const savedLocationName = cachedData.locationName;
-                const savedMethodCache = cachedData.method || "20";
-                const savedAdjustmentCache = cachedData.adjustment || "0";
+                const savedMethodCache = String(cachedData.method || "20");
+                const savedAdjustmentCache = String(cachedData.adjustment || "0");
                 const savedTuneVersion = cachedData.tuneVersion;
 
                 // Only use cache if date, method, adjustment, and tune version match

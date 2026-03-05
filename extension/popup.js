@@ -165,8 +165,8 @@ async function requestLocationAndLoad() {
             if (status.state === 'granted') {
                 // Use fresh GPS every time popup is opened
                 document.getElementById('location-name').textContent = t('detectingLoc');
-                localStorage.removeItem(CACHE_KEY_PRAYERS); // always refresh
                 const pos = await getCoords();
+                localStorage.removeItem(CACHE_KEY_PRAYERS); // Only refresh cache if gps query succeeded
                 await loadPrayersWithCoords(pos.coords.latitude, pos.coords.longitude, false);
                 return;
             }
@@ -195,10 +195,10 @@ function setLocationUI(cityName) {
     document.getElementById('location-name').innerHTML =
         `${cityName} <button id="refresh-loc-btn" class="refresh-loc-btn" title="Perbarui lokasi">🔄</button>`;
     document.getElementById('refresh-loc-btn').addEventListener('click', async () => {
-        localStorage.removeItem(CACHE_KEY_PRAYERS);
         document.getElementById('location-name').textContent = t('detectingLoc');
         try {
             const pos = await getCoords();
+            localStorage.removeItem(CACHE_KEY_PRAYERS);
             await loadPrayersWithCoords(pos.coords.latitude, pos.coords.longitude, false);
         } catch {
             document.getElementById('location-name').textContent = t('locationDenied');
@@ -212,9 +212,9 @@ function showLocationPrompt() {
         `<button id="allow-loc-btn" class="allow-loc-btn">${t('allowLocation')} 📍</button>`;
     document.getElementById('allow-loc-btn').addEventListener('click', async () => {
         document.getElementById('location-name').textContent = t('detectingLoc');
-        localStorage.removeItem(CACHE_KEY_PRAYERS);
         try {
             const pos = await getCoords();
+            localStorage.removeItem(CACHE_KEY_PRAYERS);
             await loadPrayersWithCoords(pos.coords.latitude, pos.coords.longitude, false);
         } catch {
             document.getElementById('location-name').textContent = t('locationDenied');
