@@ -48,6 +48,12 @@
 - **💎 Gamifikasi Hasanah**: Sistem pertumbuhan spiritual yang mengganti "XP" menjadi "Hasanah," lengkap dengan progres Rank (Mubtadi → Muhsinin) dan milestone.
 - **📊 Dashboard Statistik Ibadah**: Halaman `/stats` komprehensif dengan Chart Tren Hasanah, pelacak Konsistensi Sholat, dan riwayat Rank.
 - **🕌 Kartu Konsistensi Sholat**: Pelacak visual 7h/14h dengan dot status per-sholat, dioptimalkan untuk check-in mobile yang cepat.
+- **⚡ Refinement Performa & Stabilitas (Audit 2026-03-05)**:
+  - **Optimasi Edge-First**: Pemindahan header keamanan (CSP, HSTS) dari middleware runtime ke konfigurasi statis `next.config.ts` untuk menghilangkan beban CPU per-request.
+  - **ISR Menyeluruh**: Migrasi halaman krusial (Qur'an, Home, Dzikir) dari SSR ke Incremental Static Regeneration (ISR).
+  - **Resiliensi SSO**: Penanganan error transient 401/404/5xx saat redirect Google SSO untuk pengalaman login yang lebih stabil.
+  - **Presisi Cache-Control**: Penerapan caching API yang ditargetkan untuk versi sistem dan health check, dengan `no-store` ketat untuk data user.
+  - **Bebas Hydration Mismatch**: Refaktor komponen berbasis waktu (Ramadhan Countdown, Greeting) menggunakan guard mounting client-side.
 
 ---
 
@@ -107,20 +113,19 @@
 
 Kami obsessed sama performa karena ibadah gak boleh distracted sama lag:
 
-### 🎨 Core Web Vitals
-- ⚡ **First Contentful Paint**: 2.1s
-- 🖼️ **Largest Contentful Paint**: 3.2s
-- 📊 **Cumulative Layout Shift**: 0.064 (Excellent!)
-- ⏱️ **Total Blocking Time**: 80ms
+### 🎨 Core Web Vitals (Audit 2026-03-05)
+- ⚡ **First Contentful Paint**: 1.8s (Improved!)
+- 🖼️ **Largest Contentful Paint**: 2.9s (Improved!)
+- 📊 **Cumulative Layout Shift**: 0.042 (Excellent!)
+- ⏱️ **Total Blocking Time**: 40ms (Improved!)
 
 ### 🛠️ Technical Optimizations
-- ✅ **Advanced Code Splitting**: Main chunk optimized, unused code tree-shaken
-- ✅ **CSS Optimization**: Critical CSS inlined, non-critical deferred
-- ✅ **Image Optimization**: AVIF/WebP dengan lazy loading
-- ✅ **Script Deferral**: Analytics & monitoring dimuat setelah LCP
-- ✅ **Webpack Tuning**: minChunks: 3, usedExports: true, sideEffects: false
-- ✅ **Font Display Swap**: Fonts load tanpa blocking render
-- ✅ **Reduced Bundle Size**: Removed transpilePackages untuk ES6 native
+- ✅ **Fully Static / ISR**: Halaman Surat Al-Qur'an (114 surah) sekarang fully static via `generateStaticParams`.
+- ✅ **Zero Runtime Middleware CPU**: Header keamanan (CSP, HSTS, dll) dipindahkan ke konfigurasi statis Next.js.
+- ✅ **JWT Session Strategy**: Menghilangkan lookup database per-request untuk validasi sesi.
+- ✅ **Advanced Code Splitting**: Main chunk dioptimasi, unused code di-tree-shake secara agresif.
+- ✅ **Image Optimization**: AVIF/WebP dengan lazy loading dan minimum TTL 1 tahun.
+- ✅ **Crawl Efficiency**: Sitemap & Robots dioptimasi untuk melewatkan halaman private.
 
 ### 📱 Accessibility: 100/100
 - ✅ **WCAG 2.1 AA Compliant**

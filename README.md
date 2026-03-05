@@ -48,6 +48,12 @@
 - **💎 Hasanah Gamification**: Spiritual growth system replacing generic "XP" with "Hasanah," featuring Rank progression (Mubtadi → Muhsinin) and milestones.
 - **📊 Full Ibadah Statistics Dashboard**: Comprehensive `/stats` page with Hasanah Trend Charts, Prayer Consistency tracker, and Rank history.
 - **🕌 Prayer Consistency Card**: 7-day/14-day visual tracker with per-prayer status dots, optimized for quick mobile check-in.
+- **⚡ Performance & Stability Refinements (2026-03-05 Audit)**:
+  - **Edge-First Optimization**: Transitioned security headers (CSP, HSTS) from runtime middleware to static `next.config.ts` configuration, eliminating per-request CPU overhead.
+  - **ISR Everywhere**: Migrated critical pages (Quran, Home, Dhikr) from SSR to Incremental Static Regeneration (ISR) with smart revalidation logic.
+  - **SSO Resilience**: Fixed transient 401/404/5xx errors during Google SSO redirects by implementing a silent retry-safe synchronization manager.
+  - **Cache-Control Precision**: Implemented targeted caching for system version and health APIs while ensuring strict `no-store` for authenticated user data.
+  - **Zero Hydration Mismatches**: Refactored dynamic time-based components (Ramadhan Countdown, Home Greeting) to use client-side mounting guards, ensuring perfect SEO-ready HTML.
 
 
 **Nawaetu** (derived from "Niat" or Intention) is the **only Islamic app** that helps you build lasting spiritual habits by starting with pure intention—combining AI mentorship, gamification, and intention tracking to make istiqamah feel natural, not forced.
