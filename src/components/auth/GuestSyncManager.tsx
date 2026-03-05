@@ -63,11 +63,13 @@ export function GuestSyncManager() {
                 // 1. Fetch Server Data
                 const res = await fetch("/api/user/full-data");
 
-                // 401 = session cookie not yet propagated after OAuth redirect.
-                // Return silently — the effect will re-trigger when session stabilizes.
-                if (res.status === 401) return;
+                // 401 = session cookie not yet propagated.
+                // 404 = user record not yet created/propagated in DB.
+                // 5xx = transient server error.
+                // In these cases, return silently — the effect will re-trigger when session stabilizes.
+                if (res.status === 401 || res.status === 404 || res.status >= 500) return;
 
-                if (!res.ok) throw new Error("Failed to fetch user data");
+                if (!res.ok) throw new Error(`Failed to fetch user data: ${res.status}`);
                 const serverData = await res.json();
                 const hasServerProgress = checkServerProgress(serverData);
 
