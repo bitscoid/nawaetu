@@ -1,74 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
   <meta charset="utf-8">
-  <title>Nawaetu</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      width: 400px;
-      height: 600px;
-      overflow: hidden;
-      background-color: #f8fafc;
-      /* Support for light/dark mode iframe */
-    }
-
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #0f172a;
-      }
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    /* Loader while iframe is loading */
-    .loader-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: -1;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(16, 185, 129, 0.2);
-      border-left-color: #10b981;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nawaetu – Jadwal Sholat & Quran</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-  <div class="loader-container">
-    <div class="spinner"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <img src="icons/icon-48.png" alt="Nawaetu">
+      <span class="logo-text">Nawa<span>etu</span></span>
+    </div>
+    <div class="header-actions">
+      <button id="notif-toggle" class="notif-toggle" title="Aktifkan notifikasi adzan">🔕</button>
+      <button id="lang-toggle" class="lang-toggle">EN</button>
+      <a id="open-web-btn" href="https://nawaetu.com" target="_blank" class="open-web-btn">↗ Buka Lengkap</a>
+    </div>
+  </header>
+
+  <!-- RAMADAN BANNER -->
+  <div id="ramadan-banner" class="ramadan-banner" style="display:none;">
+    <div class="ramadan-glow-left"></div>
+    <div class="ramadan-glow-right"></div>
+    <div class="ramadan-inner">
+      <div class="ramadan-crescents">
+        <span class="cr left">🌙</span>
+        <div class="ramadan-center-text">
+          <div class="ramadan-arabic">رمضان</div>
+          <div class="ramadan-banner-label" id="ramadan-banner-label">Ramadan Hari ke-1</div>
+          <div class="ramadan-day-display"><strong id="ramadan-day-num">1</strong></div>
+        </div>
+        <span class="cr right">🌙</span>
+      </div>
+    </div>
   </div>
-  <iframe id="nawaetu-frame" src="https://nawaetu.com"
-    style="border: 2px solid #10b981; border-radius: 8px; box-sizing: border-box;"
-    sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-downloads allow-storage-access-by-user-activation"
-    allow="geolocation; microphone; camera; clipboard-write; clipboard-read; storage-access"></iframe>
+
+  <!-- DATE + HIJRI OFFSET ROW -->
+  <div class="date-strip">
+    <div id="date-gregorian">&nbsp;</div>
+  </div>
+  <div class="date-offset-row">
+    <div class="location-row">
+      <span>📍</span>
+      <span id="location-name">Mendeteksi lokasi…</span>
+    </div>
+    <div class="hijri-offset-control">
+      <span class="hijri-offset-label" id="hijri-offset-label">Koreksi Hijriyah</span>
+      <button id="offset-minus" class="offset-btn">−</button>
+      <span id="hijri-offset-value">-1</span>
+      <button id="offset-plus" class="offset-btn">+</button>
+    </div>
+  </div>
+
+  <!-- NEXT PRAYER CARD -->
+  <div class="next-prayer-card" id="next-prayer-card">
+    <div>
+      <div class="next-prayer-label" id="next-prayer-label">Sholat Berikutnya</div>
+      <div class="next-prayer-name" id="next-prayer-name">
+        <span class="skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+      <div class="next-prayer-time" id="next-prayer-time-label">
+        <span class="skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
+    <div class="countdown">
+      <div class="countdown-value" id="countdown-value">--:--:--</div>
+      <div class="countdown-label" id="countdown-label">menuju sholat</div>
+    </div>
+  </div>
+
+  <!-- PRAYER GRID -->
+  <div class="prayer-grid" id="prayer-grid">
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="prayer-item">
+      <div class="prayer-item-name skeleton">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div class="prayer-item-time skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- RAMADAN HIGHLIGHTS -->
+  <div id="ramadan-highlights" class="ramadan-highlights" style="display:none;">
+    <div class="rh-item imsak-item">
+      <span class="rh-icon">⏰</span>
+      <div class="rh-label" id="rh-imsak-label">Imsak</div>
+      <div class="rh-time" id="rh-imsak-time">--:--</div>
+    </div>
+    <div class="rh-divider"></div>
+    <div class="rh-item sahur-item">
+      <span class="rh-icon">🍽</span>
+      <div class="rh-label" id="rh-sahur-label">Sahur berakhir</div>
+      <div class="rh-time" id="rh-sahur-time">--:--</div>
+    </div>
+    <div class="rh-divider"></div>
+    <div class="rh-item buka-item">
+      <span class="rh-icon">🌅</span>
+      <div class="rh-label" id="rh-buka-label">Buka Puasa</div>
+      <div class="rh-time" id="rh-buka-time">--:--</div>
+    </div>
+  </div>
+
+  <!-- VERSE CARD -->
+  <div class="verse-card">
+    <div class="verse-label" id="verse-label">📖 Ayat Hari Ini</div>
+    <div id="verse-area">
+      <div class="verse-arabic" id="verse-arabic">
+        <span
+          class="skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+      <div class="verse-translation" id="verse-translation">
+        <span
+          class="skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+      <div class="verse-ref"><span id="verse-ref"></span></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    Powered by <a href="https://nawaetu.com" target="_blank">nawaetu.com</a> · #StartWithIntention
+  </div>
+
   <script src="popup.js"></script>
 </body>
 

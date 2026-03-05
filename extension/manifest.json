@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Nawaetu",
-    "version": "1.8.17",
-    "description": "Gamified Islamic habit tracker app featuring Al-Quran, Prayer Times, Qibla Compass, and AI Spiritual Assistant.",
+    "version": "1.9.4",
+    "description": "Jadwal sholat, countdown adzan, notifikasi, dan ayat Al-Quran harian – companion Muslim terpadu.",
     "icons": {
         "16": "icons/icon-16.png",
         "48": "icons/icon-48.png",
@@ -18,22 +18,13 @@
             "128": "icons/icon-128.png"
         }
     },
+    "background": {
+        "service_worker": "background.js"
+    },
     "permissions": [
         "storage",
-        "declarativeNetRequest",
-        "declarativeNetRequestWithHostAccess"
-    ],
-    "host_permissions": [
-        "*://nawaetu.com/*",
-        "*://*.nawaetu.com/*"
-    ],
-    "declarative_net_request": {
-        "rule_resources": [
-            {
-                "id": "rules",
-                "enabled": true,
-                "path": "rules.json"
-            }
-        ]
-    }
+        "geolocation",
+        "notifications",
+        "alarms"
+    ]
 }
