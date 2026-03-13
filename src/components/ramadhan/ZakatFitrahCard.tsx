@@ -68,15 +68,15 @@ export default function ZakatFitrahCard() {
                         <div className="space-y-1.5">
                             <div className={`flex items-start gap-2 text-[10px] ${currentPhase === 1 ? 'text-emerald-300' : 'text-white/50'}`}>
                                 <div className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${currentPhase === 1 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-white/20'}`} />
-                                <p><strong className="font-semibold">Waktu Mubah (Boleh):</strong> Sejak awal Ramadhan hingga hari terakhir Ramadhan.</p>
+                                <div><strong className="font-semibold">Waktu Mubah (Boleh):</strong> Sejak awal Ramadhan hingga hari terakhir Ramadhan.</div>
                             </div>
                             <div className={`flex items-start gap-2 text-[10px] ${currentPhase === 2 ? 'text-amber-300' : 'text-white/50'}`}>
                                 <div className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${currentPhase === 2 ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-white/20'}`} />
-                                <p><strong className="font-semibold">Waktu Wajib:</strong> Sejak terbenam matahari (Maghrib) di akhir Ramadhan.</p>
+                                <div><strong className="font-semibold">Waktu Wajib:</strong> Sejak terbenam matahari (Maghrib) di akhir Ramadhan.</div>
                             </div>
                             <div className={`flex items-start gap-2 text-[10px] ${currentPhase === 3 ? 'text-emerald-300' : 'text-white/50'}`}>
                                 <div className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${currentPhase === 3 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-white/20'}`} />
-                                <p><strong className="font-semibold">Waktu Afdhal (Utama):</strong> Sesudah shalat Subuh hingga sebelum shalat Idul Fitri dimulai.</p>
+                                <div><strong className="font-semibold">Waktu Afdhal (Utama):</strong> Sesudah shalat Subuh hingga sebelum shalat Idul Fitri dimulai.</div>
                             </div>
                         </div>
                     </div>
@@ -136,15 +136,15 @@ export default function ZakatFitrahCard() {
                         <h4 className="font-semibold text-emerald-300 text-xs mb-2 flex items-center gap-2">
                             <ThumbsUp className="h-3.5 w-3.5" /> Doa Menerima Zakat (Mustahiq)
                         </h4>
-                        <p className="font-arabic text-right text-lg text-white mb-2 leading-loose" dir="rtl">
+                        <div className="font-arabic text-right text-lg text-white mb-2 leading-loose" dir="rtl">
                             {doaMenerimaZakat.arabic}
-                        </p>
-                        <p className="text-[10px] text-emerald-200/80 italic mb-1">
+                        </div>
+                        <div className="text-[10px] text-emerald-200/80 italic mb-1">
                             "{doaMenerimaZakat.latin}"
-                        </p>
-                        <p className="text-[10px] text-white/50 leading-relaxed">
+                        </div>
+                        <div className="text-[10px] text-white/50 leading-relaxed">
                             Artinya: {doaMenerimaZakat.translation}
-                        </p>
+                        </div>
                     </div>
 
                     {/* Calculator Button */}
