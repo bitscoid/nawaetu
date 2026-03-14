@@ -30,14 +30,20 @@
 > **Nawaetu menggunakan Dual Licensing.** Gratis untuk Open Source (AGPLv3), namun memerlukan **Lisensi Komersial** untuk penggunaan komersial/proprietary.
 
 ### 🚀 Highlight Terbaru (v1.9.x)
-- **⏱️ Pelacak Waktu Baca Al-Qur'an (v1.9.5)**: Fitur baru yang memungkinkan Anda secara sadar mencatat berapa lama waktu yang dihabiskan untuk membaca Al-Qur'an.
-  - **Kontrol Manual Tilawah**: Mulai/hentikan pelacakan dengan tombol **"Mulai Tilawah"** di setiap halaman Surah — tidak akan salah mencatat saat Anda hanya menjelajah.
-  - **Akumulasi Harian**: Waktu terakumulasi secara mulus antar Surah sepanjang hari tanpa direset.
-  - **Auto-Pause saat Keluar**: Timer berhenti otomatis ketika Anda berpindah halaman atau menutup aplikasi, sehingga hanya waktu membaca aktif yang terhitung.
-  - **Banner Progress Harian**: Kartu live di halaman `/quran` menampilkan total waktu tilawah hari ini vs. target harian Anda, dengan progress bar berwarna (berubah hijau 🟢 saat target tercapai).
-  - **Target Harian yang Bisa Diatur**: Pilih target tilawah harian Anda sendiri — 5m, 10m, 15m, 30m, atau 1 jam — tersimpan lokal, selalu diingat.
-  - **Sinkronisasi Cloud**: Detik membaca disinkronkan ke database (`dailyActivities.quranReadingSeconds`) untuk pengguna yang sudah login.
-  - **Integrasi Dashboard Statistik**: Kartu **"Statistik Al-Quran"** baru di halaman `/stats` menampilkan Total Ayat Dibaca, Durasi Tilawah Hari Ini, dan Total Durasi Seumur Hidup — langsung terlihat tanpa perlu klik.
+- **⏱️ Pelacak Waktu & Mode Fokus Al-Qur'an (v1.9.5)**: Fitur baru yang memungkinkan Anda secara sadar mencatat waktu dan berendam dalam kekhusyukan saat membaca Al-Qur'an.
+  - **🧘 Mode Fokus (Tilawah Imersif)**: Pengalaman membaca tanpa gangguan yang otomatis aktif saat Anda mulai tilawah.
+    - **Fullscreen Immersive UI**: Mode layar penuh otomatis untuk menghilangkan distraksi dari browser/sistem operasi.
+    - **Jangkar Niat (Niyyah Screen)**: Layar persiapan dengan Basmallah untuk meluruskan niat sebelum mulai membaca.
+    - **Screen Wake Lock**: Mencegah layar mati atau meredup saat aktif membaca (layar tetap ON).
+    - **Notification Suppression**: Memblokir notifikasi internal Nawaetu saat sedang fokus tilawah.
+    - **Badge Timer Sesi**: Timer minimalis yang melayang untuk memantau durasi sesi secara real-time.
+    - **Konfirmasi Selesai**: Dialog penutup dengan ringkasan waktu untuk mencegah penghentian sesi yang tidak sengaja.
+    - **Adaptasi Tema Premium**: Mendukung penuh tema **Daylight (Light Mode)** maupun tema gelap dengan estetika yang disesuaikan.
+  - **Kontrol Manual Tilawah**: Mulai/hentikan pelacakan dengan tombol **"Mulai Tilawah"** di setiap halaman Surah.
+  - **Akumulasi Harian**: Waktu terakumulasi secara mulus sepanjang hari antar Surah.
+  - **Auto-Pause saat Keluar**: Timer berhenti otomatis ketika Anda berpindah halaman atau meminimalkan aplikasi.
+  - **Banner Progress Harian**: Kartu live di halaman `/quran` menampilkan total waktu vs. target harian Anda.
+  - **Integrasi Dashboard Statistik**: Kartu **"Statistik Al-Quran"** di `/stats` menampilkan Total Ayat, Durasi Hari Ini, dan Total Seumur Hidup.
 - **🌙 Dzikir 2.0 & Mode Zen**: Overhaul besar-besaran pada fitur Tasbih.
   - **Dzikir Berantai (Sequential)**: Alur otomatis untuk dzikir bakda sholat (Subhanallah → Alhamdulillah → Allahu Akbar).
   - **Mode Zen (Optimasi OLED)**: Imersi penuh layar bersih dengan **Feedback Ripple** dinamis dan rendering berbasis Portal untuk menutupi seluruh UI.

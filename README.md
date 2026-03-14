@@ -30,14 +30,20 @@
 > **Nawaetu is Dual Licensed.** Free for Open Source (AGPLv3), but requires a **Commercial License** for proprietary/closed-source use.
 
 ### 🚀 Recent Highlights (v1.9.x)
-- **⏱️ Quran Reading Time Tracker (v1.9.5)**: A brand-new, intent-driven feature letting you consciously track how long you spend reciting Al-Quran.
-  - **Manual Tilawah Controls**: Start/stop tracking with dedicated **"Mulai Tilawah"** buttons on every Surah page — never accidentally tracking passive browsing.
-  - **Daily Accumulation**: Time accumulates seamlessly across multiple Surahs throughout the day without resetting.
-  - **Auto-Pause on Leave**: Timer automatically stops when you navigate away or minimise the app, ensuring only active reading is counted.
-  - **Daily Progress Banner**: A live progress card on the `/quran` page shows today's total reading time vs. your personal daily target, with a color-coded progress bar (turns green 🟢 on target achieved).
-  - **Customisable Daily Target**: Choose your own daily tilawah goal — 5m, 10m, 15m, 30m, or 1 hour — saved locally, always remembered.
-  - **Cloud Sync**: Reading seconds are synced to the database (`dailyActivities.quranReadingSeconds`) for authenticated users.
-  - **Stats Dashboard Integration**: A dedicated **"Statistik Al-Quran"** card on `/stats` shows Total Ayat Dibaca, Today's Reading Duration, and Lifetime Total Duration — all visible without any clicks.
+- **⏱️ Quran Reading Time Tracker & Focus Mode (v1.9.5)**: A brand-new, intent-driven suite letting you consciously track and immerse yourself in reciting Al-Quran.
+  - **🧘 Focus Mode (Tilawah Focus)**: An immersive, distraction-free reading experience that triggers when you start Tilawah.
+    - **Fullscreen Immersive UI**: Automatically enters fullscreen to remove browser/OS distractions.
+    - **Niyyah Anchor**: Mindful entry screen with Basmallah to help set pure intention before starting.
+    - **Screen Wake Lock**: Prevents the screen from sleeping or dimming while you read.
+    - **Notification Suppression**: Suppresses in-app Nawaetu notifications (Adhan reminders, etc.) while Tilawah is active.
+    - **Session Timer Badge**: Floating minimal timer showing real-time progress at the top.
+    - **Exit Confirmation**: Mindful exit dialog showing session summary to prevent accidental stops.
+    - **Premium Adaptation**: Fully compatible with both **Daylight (Light)** and Dark themes.
+  - **Manual Tilawah Controls**: Start/stop tracking with dedicated **"Mulai Tilawah"** buttons on every Surah page.
+  - **Daily Accumulation**: Time accumulates seamlessly across multiple Surahs throughout the day.
+  - **Auto-Pause on Leave**: Timer automatically stops when you navigate away or minimise the app.
+  - **Daily Progress Banner**: A live progress card on the `/quran` page shows today's total reading time vs. your personal daily target.
+  - **Stats Dashboard Integration**: Dedicated **"Statistik Al-Quran"** card on `/stats` shows Total Ayat Dibaca, Today's Duration, and Lifetime Total.
 - **🌙 Dhikr 2.0 & Zen Mode**: A massive overhaul to the Tasbih feature.
   - **Dzikir Berantai (Sequential)**: Automatic flow for post-prayer dhikr (Subhanallah → Alhamdulillah → Allahu Akbar).
   - **Zen Mode (OLED Optimized)**: Full-screen, minimalist immersion with dynamic **Ripple Feedback** and portal-rendered UI overlay.
