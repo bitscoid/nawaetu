@@ -6,7 +6,7 @@
 [![Dual Licensed](https://img.shields.io/badge/Dual_Licensed-Commercial_Available-purple.svg)](#license)
 [![GitHub Issues](https://img.shields.io/github/issues/hadianr/nawaetu)](https://github.com/hadianr/nawaetu/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/hadianr/nawaetu)](https://github.com/hadianr/nawaetu)
-[![Version](https://img.shields.io/badge/Version-v1.9.4-blue)](https://github.com/hadianr/nawaetu/releases)
+[![Version](https://img.shields.io/badge/Version-v1.9.5-blue)](https://github.com/hadianr/nawaetu/releases)
 
 ---
 
@@ -30,6 +30,14 @@
 > **Nawaetu is Dual Licensed.** Free for Open Source (AGPLv3), but requires a **Commercial License** for proprietary/closed-source use.
 
 ### 🚀 Recent Highlights (v1.9.x)
+- **⏱️ Quran Reading Time Tracker (v1.9.5)**: A brand-new, intent-driven feature letting you consciously track how long you spend reciting Al-Quran.
+  - **Manual Tilawah Controls**: Start/stop tracking with dedicated **"Mulai Tilawah"** buttons on every Surah page — never accidentally tracking passive browsing.
+  - **Daily Accumulation**: Time accumulates seamlessly across multiple Surahs throughout the day without resetting.
+  - **Auto-Pause on Leave**: Timer automatically stops when you navigate away or minimise the app, ensuring only active reading is counted.
+  - **Daily Progress Banner**: A live progress card on the `/quran` page shows today's total reading time vs. your personal daily target, with a color-coded progress bar (turns green 🟢 on target achieved).
+  - **Customisable Daily Target**: Choose your own daily tilawah goal — 5m, 10m, 15m, 30m, or 1 hour — saved locally, always remembered.
+  - **Cloud Sync**: Reading seconds are synced to the database (`dailyActivities.quranReadingSeconds`) for authenticated users.
+  - **Stats Dashboard Integration**: A dedicated **"Statistik Al-Quran"** card on `/stats` shows Total Ayat Dibaca, Today's Reading Duration, and Lifetime Total Duration — all visible without any clicks.
 - **🌙 Dhikr 2.0 & Zen Mode**: A massive overhaul to the Tasbih feature.
   - **Dzikir Berantai (Sequential)**: Automatic flow for post-prayer dhikr (Subhanallah → Alhamdulillah → Allahu Akbar).
   - **Zen Mode (OLED Optimized)**: Full-screen, minimalist immersion with dynamic **Ripple Feedback** and portal-rendered UI overlay.

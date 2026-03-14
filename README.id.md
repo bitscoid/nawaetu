@@ -6,7 +6,7 @@
 [![Dual Licensed](https://img.shields.io/badge/Dual_Licensed-Commercial_Available-purple.svg)](#lisensi)
 [![GitHub Issues](https://img.shields.io/github/issues/hadianr/nawaetu)](https://github.com/hadianr/nawaetu/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/hadianr/nawaetu)](https://github.com/hadianr/nawaetu)
-[![Version](https://img.shields.io/badge/Version-v1.9.4-blue)](https://github.com/hadianr/nawaetu/releases)
+[![Version](https://img.shields.io/badge/Version-v1.9.5-blue)](https://github.com/hadianr/nawaetu/releases)
 
 ---
 
@@ -30,6 +30,14 @@
 > **Nawaetu menggunakan Dual Licensing.** Gratis untuk Open Source (AGPLv3), namun memerlukan **Lisensi Komersial** untuk penggunaan komersial/proprietary.
 
 ### 🚀 Highlight Terbaru (v1.9.x)
+- **⏱️ Pelacak Waktu Baca Al-Qur'an (v1.9.5)**: Fitur baru yang memungkinkan Anda secara sadar mencatat berapa lama waktu yang dihabiskan untuk membaca Al-Qur'an.
+  - **Kontrol Manual Tilawah**: Mulai/hentikan pelacakan dengan tombol **"Mulai Tilawah"** di setiap halaman Surah — tidak akan salah mencatat saat Anda hanya menjelajah.
+  - **Akumulasi Harian**: Waktu terakumulasi secara mulus antar Surah sepanjang hari tanpa direset.
+  - **Auto-Pause saat Keluar**: Timer berhenti otomatis ketika Anda berpindah halaman atau menutup aplikasi, sehingga hanya waktu membaca aktif yang terhitung.
+  - **Banner Progress Harian**: Kartu live di halaman `/quran` menampilkan total waktu tilawah hari ini vs. target harian Anda, dengan progress bar berwarna (berubah hijau 🟢 saat target tercapai).
+  - **Target Harian yang Bisa Diatur**: Pilih target tilawah harian Anda sendiri — 5m, 10m, 15m, 30m, atau 1 jam — tersimpan lokal, selalu diingat.
+  - **Sinkronisasi Cloud**: Detik membaca disinkronkan ke database (`dailyActivities.quranReadingSeconds`) untuk pengguna yang sudah login.
+  - **Integrasi Dashboard Statistik**: Kartu **"Statistik Al-Quran"** baru di halaman `/stats` menampilkan Total Ayat Dibaca, Durasi Tilawah Hari Ini, dan Total Durasi Seumur Hidup — langsung terlihat tanpa perlu klik.
 - **🌙 Dzikir 2.0 & Mode Zen**: Overhaul besar-besaran pada fitur Tasbih.
   - **Dzikir Berantai (Sequential)**: Alur otomatis untuk dzikir bakda sholat (Subhanallah → Alhamdulillah → Allahu Akbar).
   - **Mode Zen (Optimasi OLED)**: Imersi penuh layar bersih dengan **Feedback Ripple** dinamis dan rendering berbasis Portal untuk menutupi seluruh UI.
@@ -612,4 +620,4 @@ Let's make ibadah easier, one niat at a time. 🚀🌙
 
 ---
 
-*Last updated: March 4, 2026*
+*Last updated: March 15, 2026*
