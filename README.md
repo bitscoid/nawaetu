@@ -213,6 +213,13 @@ We welcome contributions from the global community! Whether it's bug fixes, new 
 
 Nawaetu is an open-source project built for the Ummah. Your support helps cover server costs (database, hosting) and fuels further development.
 
+### ☁️ Infrastructure Sponsor
+We are incredibly grateful to be supported by **[Biznet Gio Cloud](https://www.biznetgio.com/)**, who generously provides the high-performance cloud server infrastructure powering Nawaetu.com.
+
+[![Biznet Gio Cloud](https://img.shields.io/badge/Supported_by-Biznet_Gio_Cloud-00529B?style=for-the-badge&logo=icloud&logoColor=white)](https://www.biznetgio.com/)
+
+*Is your company interested in supporting Islamic open-source tech? Become a sponsor to have your logo featured here and help us scale Nawaetu for the global Ummah! Reach out to [hadian.rahmat@gmail.com](mailto:hadian.rahmat@gmail.com).*
+
 ### 💖 Donation Platforms
 | Platform | Link |
 | :--- | :--- |

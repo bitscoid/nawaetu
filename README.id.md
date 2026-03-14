@@ -533,6 +533,13 @@ Punya pertanyaan atau feedback? Reach out:
 
 Nawaetu adalah proyek open-source untuk umat. Dukungan Anda membantu menutupi biaya server (database, hosting) dan mempercepat pengembangan fitur baru.
 
+### ☁️ Sponsor Infrastruktur
+Kami sangat berterima kasih atas dukungan dari **[Biznet Gio Cloud](https://www.biznetgio.com/)**, yang telah bermurah hati menyediakan infrastruktur server cloud berkinerja tinggi untuk menenagai Nawaetu.com.
+
+[![Biznet Gio Cloud](https://img.shields.io/badge/Supported_by-Biznet_Gio_Cloud-00529B?style=for-the-badge&logo=icloud&logoColor=white)](https://www.biznetgio.com/)
+
+*Apakah perusahaan Anda tertarik mendukung teknologi open-source Islami? Jadilah sponsor untuk menampilkan logo/brand Anda di sini dan bantu kami mengembangkan aplikasi Nawaetu untuk umat global! Hubungi [hadian.rahmat@gmail.com](mailto:hadian.rahmat@gmail.com).*
+
 ### 💖 Platform Donasi
 | Platform | Link |
 | :--- | :--- |
