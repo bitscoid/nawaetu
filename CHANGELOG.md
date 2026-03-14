@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.5] - 2026-03-15
+
+### Added
+- **Feat: Introduce Quran reading time tracking with hasanah rewards and update daily activities schema.**
+- **Feat: Associate push subscriptions with user IDs and add latitude/longitude fallback for prayer alerts.**
+- **Feat: Implement Quran focus mode with niyyah screen, active badge, exit confirmation, and associated styling to hide navigation and scrollbars.**
+- **Feat: Implement Quran reading time tracking with daily stats, progress banner, and API integration.**
+- **Feat: Implement Zakat Fitrah calculator with recipient management, price presets, and intention display, including new translations and data.**
+- **Feat: Introduce Ibadah tracker and multi-tabbed spiritual content views for Quran, Doa, and Hadith.**
+- **Feat: Implement a new prayer times popup UI with background service worker, geolocation, and notification support.**
+- **Feat: add real-time word-by-word audio highlighting (karaoke mode) feature description to READMEs.**
+- **Feat: Allow immediate reciter switching for audio and word-level highlighting, gracefully handling segment availability.**
+- **Feat: Implement word-by-word audio highlighting (Karaoke Mode) for Quran verses using segment API data.**
+
+### Performance
+- **Perf: migrate NextAuth to JWT strategy + cache OG images**
+- **Perf: full Vercel CPU optimization**
+
+### Improved
+- **Refactor: Replace `p` tags with `div` tags in DalilBadge, IntentionCard, and ZakatFitrahCard components.**
+- **Chore: remove leftover console.log in sync guest test**
+- **Refactor: remove debugging console.log in payment webhook**
+- **Style: refine tooltip appearance and update backdrop styles for daylight theme**
+
+### Fixed
+- **Fix: Clear prayer times cache only after successful location retrieval and robustly handle calculation method and adjustment settings.**
+- **Fix: update API calls to include word_translation_language parameter for improved localization**
+- **Fix: update word position comparison in VerseCard and clamp negative start times in fetchSurahSegments**
+- **Fix: GuestSyncManager now silently handles 404 and 5xx API responses and includes the status in fetch error messages.**
+- **Fix: resolved React hydration mismatches in ISR pages**
+- **Fix: handle 401 race condition in GuestSyncManager after JWT migration**
+
+
 ## [1.9.4] - 2026-03-05
 
 ### Added
