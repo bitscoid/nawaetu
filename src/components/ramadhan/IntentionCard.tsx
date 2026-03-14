@@ -113,7 +113,7 @@ export default function IntentionCard({ intention, defaultExpanded = false, comp
                                 borderColor: "rgba(255, 255, 255, 0.1)"
                             }}
                         >
-                            <p
+                            <div
                                 className="text-right font-arabic leading-loose text-white drop-shadow-lg"
                                 style={{
                                     fontFamily: "var(--font-amiri)",
@@ -126,17 +126,17 @@ export default function IntentionCard({ intention, defaultExpanded = false, comp
                                 lang="ar"
                             >
                                 {intention.arabic}
-                            </p>
+                            </div>
                         </div>
 
                         {/* Latin transliteration */}
                         <div className="relative pl-4 pr-2">
                             <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-full bg-white/20" />
-                            <p className="text-sm italic text-white/80 leading-relaxed font-normal" style={{
+                            <div className="text-sm italic text-white/80 leading-relaxed font-normal" style={{
                                 textShadow: "0 1px 8px rgba(0,0,0,0.4)"
                             }}>
                                 &ldquo;{intention.latin}&rdquo;
-                            </p>
+                            </div>
                         </div>
 
                         {/* Translation */}
@@ -144,24 +144,24 @@ export default function IntentionCard({ intention, defaultExpanded = false, comp
                             background: "rgba(0, 0, 0, 0.2)",
                             borderColor: "rgba(255, 255, 255, 0.1)"
                         }}>
-                            <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5 text-white/50">
+                            <div className="text-[10px] font-bold uppercase tracking-wider mb-2.5 text-white/50">
                                 {t.intention_translation}
-                            </p>
-                            <p className="text-sm text-white leading-relaxed font-normal" style={{
+                            </div>
+                            <div className="text-sm text-white leading-relaxed font-normal" style={{
                                 textShadow: "0 1px 8px rgba(0,0,0,0.4)",
                                 lineHeight: "1.7"
                             }}>
                                 &ldquo;{localizedTranslation}&rdquo;
-                            </p>
+                            </div>
                         </div>
 
                         {/* Source */}
                         {localizedSource && (
                             <div className="flex items-center gap-2 px-1">
                                 <span className="h-1 w-1 rounded-full bg-white/20" />
-                                <p className="text-[10px] font-medium text-white/30 uppercase tracking-widest leading-relaxed">
+                                <div className="text-[10px] font-medium text-white/30 uppercase tracking-widest leading-relaxed">
                                     {localizedSource}
-                                </p>
+                                </div>
                             </div>
                         )}
                     </div>

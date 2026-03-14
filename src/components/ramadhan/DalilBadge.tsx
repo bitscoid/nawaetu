@@ -98,20 +98,19 @@ export default function DalilBadge({ dalil, variant = "inline" }: DalilBadgeProp
                                     borderColor: "rgba(255, 255, 255, 0.1)"
                                 }}
                             >
-                                <p
-                                    className="text-right font-arabic leading-loose text-white drop-shadow-lg"
-                                    style={{
-                                        fontFamily: "var(--font-amiri)",
-                                        fontSize: "1.5rem",
-                                        fontWeight: "600",
-                                        textShadow: "0 2px 12px rgba(0,0,0,0.6)",
-                                        lineHeight: "2"
-                                    }}
-                                    dir="rtl"
-                                    lang="ar"
-                                >
-                                    {dalil.arabic}
-                                </p>
+                            <div className="text-right font-arabic leading-loose text-white drop-shadow-lg"
+                                style={{
+                                    fontFamily: "var(--font-amiri)",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "600",
+                                    textShadow: "0 2px 12px rgba(0,0,0,0.6)",
+                                    lineHeight: "2"
+                                }}
+                                dir="rtl"
+                                lang="ar"
+                            >
+                                {dalil.arabic}
+                            </div>
                             </div>
                         )}
 
@@ -127,28 +126,27 @@ export default function DalilBadge({ dalil, variant = "inline" }: DalilBadgeProp
                             </div>
                         )}
 
-                        {/* Translation */}
                         <div className="rounded-2xl border p-4 backdrop-blur-sm shadow-lg" style={{
                             background: "rgba(0, 0, 0, 0.2)",
                             borderColor: "rgba(255, 255, 255, 0.1)"
                         }}>
-                            <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5 text-white/50">
+                            <div className="text-[10px] font-bold uppercase tracking-wider mb-2.5 text-white/50">
                                 {t.evidenceTranslation}
-                            </p>
-                            <p className="text-sm text-white leading-relaxed font-normal" style={{
+                            </div>
+                            <div className="text-sm text-white leading-relaxed font-normal" style={{
                                 textShadow: "0 1px 8px rgba(0,0,0,0.4)",
                                 lineHeight: "1.7"
                             }}>
                                 &ldquo;{localizedTranslation}&rdquo;
-                            </p>
+                            </div>
                         </div>
 
                         {/* Source */}
                         <div className="flex items-center gap-2 px-1">
                             <span className="h-1 w-1 rounded-full bg-white/20" />
-                            <p className="text-[10px] font-medium text-white/30 uppercase tracking-widest leading-relaxed">
+                            <div className="text-[10px] font-medium text-white/30 uppercase tracking-widest leading-relaxed">
                                 {localizedSource}
-                            </p>
+                            </div>
                         </div>
                     </div>
                 </div>
