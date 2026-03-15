@@ -18,14 +18,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLocale } from "@/context/LocaleContext";
+import { useTranslations } from "@/context/LocaleContext";
 import QuranReadingBanner from "@/components/quran/QuranReadingBanner";
 
 export default function QuranPageClient() {
-    const { t } = useLocale();
+    const t = useTranslations();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    
+    if (!mounted) return null;
     
     return (
         <div className="space-y-4">

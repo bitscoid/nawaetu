@@ -42,6 +42,11 @@ export default function QuranTracker({ name, count }: QuranTrackerProps) {
     const { currentTheme } = useTheme();
     const isLight = currentTheme === "daylight";
     const t = useTranslations();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { isTracking, sessionSeconds, dailyTotalSeconds, startTracking, stopTracking } =
         useQuranTimeTracker();
@@ -91,6 +96,8 @@ export default function QuranTracker({ name, count }: QuranTrackerProps) {
     };
 
     const timeString = formatTime(dailyTotalSeconds);
+
+    if (!mounted) return null;
 
     return (
         <>

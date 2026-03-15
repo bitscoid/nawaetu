@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Clock, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/context/LocaleContext';
@@ -13,6 +13,12 @@ interface QuranStatsCardProps {
 
 export function QuranStatsCard({ totalQuranAyat, totalQuranReadSeconds, todayReadSeconds = 0 }: QuranStatsCardProps) {
     const t = useTranslations();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const hasAnyData = totalQuranAyat > 0 || totalQuranReadSeconds > 0 || todayReadSeconds > 0;
 
     function formatDuration(totalSeconds: number): string {
@@ -55,6 +61,8 @@ export function QuranStatsCard({ totalQuranAyat, totalQuranReadSeconds, todayRea
             color: 'text-orange-400',
         },
     ];
+
+    if (!mounted) return <div className="h-48 rounded-2xl border border-white/10 bg-white/[0.02] animate-pulse" />;
 
     return (
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
