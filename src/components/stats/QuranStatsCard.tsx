@@ -3,6 +3,7 @@
 import React from 'react';
 import { BookOpen, Clock, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/context/LocaleContext';
 
 interface QuranStatsCardProps {
     totalQuranAyat: number;
@@ -10,41 +11,46 @@ interface QuranStatsCardProps {
     todayReadSeconds?: number;
 }
 
-function formatDuration(totalSeconds: number): string {
-    if (!totalSeconds || totalSeconds === 0) return '0 menit';
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    if (hours > 0) return `${hours}j ${minutes}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds} detik`;
-}
-
 export function QuranStatsCard({ totalQuranAyat, totalQuranReadSeconds, todayReadSeconds = 0 }: QuranStatsCardProps) {
+    const t = useTranslations();
     const hasAnyData = totalQuranAyat > 0 || totalQuranReadSeconds > 0 || todayReadSeconds > 0;
+
+    function formatDuration(totalSeconds: number): string {
+        if (!totalSeconds || totalSeconds === 0) return `0 ${t.unitMinuteLong}`;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        let result = "";
+        if (hours > 0) result += `${hours}${t.unitHour} `;
+        if (minutes > 0) result += `${minutes}${t.unitMinute} `;
+        if (seconds > 0 && hours === 0) result += `${seconds}${t.unitSecond}`;
+        
+        return result.trim() || `0 ${t.unitMinuteLong}`;
+    }
 
     const stats = [
         {
             icon: <BookOpen className="w-4 h-4 text-blue-400" />,
-            label: 'Total Ayat Dibaca',
+            label: t.tilawahTotalAyat,
             value: totalQuranAyat > 0 ? totalQuranAyat.toLocaleString() : '—',
-            sub: totalQuranAyat > 0 ? 'ayat kumulatif' : 'Mulai baca untuk tracking',
+            sub: totalQuranAyat > 0 ? t.tilawahTotalAyatSub : t.tilawahTotalAyatEmpty,
             gradient: 'from-blue-500/10',
             color: 'text-blue-400',
         },
         {
             icon: <Clock className="w-4 h-4 text-emerald-400" />,
-            label: 'Durasi Tilawah Hari Ini',
+            label: t.tilawahDurationToday,
             value: todayReadSeconds > 0 ? formatDuration(todayReadSeconds) : '—',
-            sub: todayReadSeconds > 0 ? 'Hari ini' : 'Belum ada sesi hari ini',
+            sub: todayReadSeconds > 0 ? t.tilawahTodaySub : t.tilawahNoSessionToday,
             gradient: 'from-emerald-500/10',
             color: 'text-emerald-400',
         },
         {
             icon: <Flame className="w-4 h-4 text-orange-400" />,
-            label: 'Total Durasi Baca',
+            label: t.tilawahTotalDuration,
             value: totalQuranReadSeconds > 0 ? formatDuration(totalQuranReadSeconds) : '—',
-            sub: 'Akumulasi seluruh waktu',
+            sub: t.tilawahTotalDurationSub,
             gradient: 'from-orange-500/10',
             color: 'text-orange-400',
         },
@@ -54,12 +60,12 @@ export function QuranStatsCard({ totalQuranAyat, totalQuranReadSeconds, todayRea
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
             <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
                 <span className="text-base">📖</span>
-                Statistik Al-Quran
+                {t.tilawahStatsTitle}
             </h2>
 
             {!hasAnyData && (
                 <p className="text-xs text-white/30 italic text-center py-2 mb-3">
-                    Mulai membaca Al-Quran dan gunakan tombol &quot;Mulai Tilawah&quot; untuk mencatat aktivitasmu.
+                    {t.tilawahStatsHelp}
                 </p>
             )}
 

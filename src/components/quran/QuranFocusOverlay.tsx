@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { BookOpen, X, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
+import { useTranslations } from "@/context/LocaleContext";
 
 interface QuranFocusOverlayProps {
     onConfirm: () => void;   // user taps "Bismillah, Mulai"
@@ -18,6 +19,7 @@ export function QuranNiyyahScreen({ onConfirm, onCancel }: QuranFocusOverlayProp
     const { currentTheme } = useTheme();
     const isLight = currentTheme === "daylight";
     const [visible, setVisible] = useState(false);
+    const t = useTranslations();
 
     useEffect(() => {
         const t = setTimeout(() => setVisible(true), 50);
@@ -62,7 +64,7 @@ export function QuranNiyyahScreen({ onConfirm, onCancel }: QuranFocusOverlayProp
                 "text-sm mb-1 font-medium",
                 isLight ? "text-amber-700/80" : "text-white/50"
             )}>
-                Bismillahir-Rahmanir-Rahim
+                {t.tilawahNiyyahTitle}
             </p>
 
             {/* Niyyah text */}
@@ -73,8 +75,7 @@ export function QuranNiyyahScreen({ onConfirm, onCancel }: QuranFocusOverlayProp
                     : "bg-white/[0.03] border-white/8"
             )}>
                 <p className={cn("text-xs font-medium leading-relaxed", isLight ? "text-stone-600" : "text-white/60")}>
-                    Luruskan niat — baca Al-Qur&apos;an karena Allah semata, bukan karena rutinitas.
-                    Layar akan masuk mode fokus. Genggamlah setiap ayat dengan hati yang hadir.
+                    {t.tilawahNiyyahBody}
                 </p>
             </div>
 
@@ -88,7 +89,7 @@ export function QuranNiyyahScreen({ onConfirm, onCancel }: QuranFocusOverlayProp
                         : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40"
                 )}
             >
-                ✨ Bismillah, Mulai Tilawah
+                {t.tilawahConfirm}
             </button>
 
             <button
@@ -98,7 +99,7 @@ export function QuranNiyyahScreen({ onConfirm, onCancel }: QuranFocusOverlayProp
                     isLight ? "text-stone-400 hover:text-stone-600" : "text-white/30 hover:text-white/60"
                 )}
             >
-                Batal
+                {t.tilawahCancel}
             </button>
         </div>
     );
@@ -111,11 +112,13 @@ interface FocusBadgeProps {
 
 /** 
  * Layer 2 — Active Focus Mode Badge  
- * A minimal floating badge shown while tracking is active.
+ * A minimal floating pill shown while tracking is active.
+ * Smaller and less intrusive for mobile.
  */
 export function QuranFocusBadge({ sessionSeconds, onExit }: FocusBadgeProps) {
     const { currentTheme } = useTheme();
     const isLight = currentTheme === "daylight";
+    const t = useTranslations();
 
     const formatTime = (s: number) => {
         const m = Math.floor(s / 60);
@@ -125,38 +128,43 @@ export function QuranFocusBadge({ sessionSeconds, onExit }: FocusBadgeProps) {
 
     return (
         <div className={cn(
-            "fixed top-4 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-4 py-2 rounded-full border shadow-2xl backdrop-blur-xl transition-all",
+            "fixed top-3 left-1/2 -translate-x-1/2 z-[200] flex items-center rounded-full border shadow-lg backdrop-blur-xl transition-all overflow-hidden",
             isLight
                 ? "bg-white/90 border-amber-200/60 shadow-amber-100/40"
                 : "bg-black/80 border-emerald-500/20 shadow-black/60"
         )}>
-            {/* Live dot */}
-            <div className="relative flex h-2 w-2">
-                <span className={cn(
-                    "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                    isLight ? "bg-amber-400" : "bg-emerald-400"
-                )} />
-                <span className={cn(
-                    "relative inline-flex rounded-full h-2 w-2",
-                    isLight ? "bg-amber-500" : "bg-emerald-500"
-                )} />
+            {/* Left content: live dot + label + time */}
+            <div className="flex items-center gap-1.5 pl-2.5 pr-2 py-1.5">
+                {/* Live dot */}
+                <div className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                    <span className={cn(
+                        "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                        isLight ? "bg-amber-400" : "bg-emerald-400"
+                    )} />
+                    <span className={cn(
+                        "relative inline-flex rounded-full h-1.5 w-1.5",
+                        isLight ? "bg-amber-500" : "bg-emerald-500"
+                    )} />
+                </div>
+                <span className={cn("text-[10px] font-medium leading-none", isLight ? "text-stone-500" : "text-white/60")}>
+                    {t.tilawahFocusMode}
+                </span>
+                <span className={cn("text-[10px] font-mono font-bold tabular-nums leading-none", isLight ? "text-amber-700" : "text-emerald-400")}>
+                    {formatTime(sessionSeconds)}
+                </span>
             </div>
-            <span className={cn("text-xs font-medium", isLight ? "text-stone-600" : "text-white/70")}>
-                Fokus Mode
-            </span>
-            <span className={cn("text-xs font-mono font-bold tabular-nums", isLight ? "text-amber-700" : "text-emerald-400")}>
-                {formatTime(sessionSeconds)}
-            </span>
-            <div className={cn("w-px h-3", isLight ? "bg-stone-200" : "bg-white/10")} />
+            {/* X button — larger tap area, square for easy tapping */}
             <button
                 onClick={onExit}
-                title="Keluar dari Fokus Mode"
+                title={t.tilawahExitTooltip}
                 className={cn(
-                    "transition-colors",
-                    isLight ? "text-stone-400 hover:text-red-500" : "text-white/30 hover:text-red-400"
+                    "flex items-center justify-center h-full px-2.5 py-1.5 border-l transition-colors active:scale-95",
+                    isLight
+                        ? "border-amber-200/50 text-stone-400 hover:text-red-500 hover:bg-red-50/60"
+                        : "border-white/10 text-white/30 hover:text-red-400 hover:bg-red-500/10"
                 )}
             >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" strokeWidth={2.5} />
             </button>
         </div>
     );
@@ -172,10 +180,11 @@ export function QuranFocusExitConfirm({ sessionSeconds, onConfirm, onCancel }: {
 }) {
     const { currentTheme } = useTheme();
     const isLight = currentTheme === "daylight";
+    const t = useTranslations();
 
     const minutes = Math.floor(sessionSeconds / 60);
     const seconds = sessionSeconds % 60;
-    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds} detik`;
+    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 
     return (
         <div className="fixed inset-0 z-[9998] flex items-end justify-center pb-8 px-4">
@@ -190,11 +199,11 @@ export function QuranFocusExitConfirm({ sessionSeconds, onConfirm, onCancel }: {
                     : "bg-[#111] border-white/10"
             )}>
                 <p className={cn("text-sm font-bold mb-1", isLight ? "text-stone-800" : "text-white")}>
-                    Akhiri sesi tilawah?
+                    {t.tilawahExitTitle}
                 </p>
                 <p className={cn("text-xs mb-5 leading-relaxed", isLight ? "text-stone-500" : "text-white/40")}>
-                    Anda sudah membaca selama <strong className={isLight ? "text-amber-700" : "text-emerald-400"}>{timeStr}</strong>.
-                    Waktu ini sudah tersimpan. Lanjutkan jika memungkinkan — setiap menit bernilai di sisi Allah.
+                    {t.tilawahExitBody} <strong className={isLight ? "text-amber-700" : "text-emerald-400"}>{timeStr}</strong>
+                    {t.tilawahExitBodySuffix}
                 </p>
                 <div className="flex gap-3">
                     <button
@@ -206,7 +215,7 @@ export function QuranFocusExitConfirm({ sessionSeconds, onConfirm, onCancel }: {
                                 : "border-white/10 text-white/60 hover:bg-white/5"
                         )}
                     >
-                        Lanjut Baca
+                        {t.tilawahContinue}
                     </button>
                     <button
                         onClick={onConfirm}
@@ -217,7 +226,7 @@ export function QuranFocusExitConfirm({ sessionSeconds, onConfirm, onCancel }: {
                                 : "bg-emerald-700 hover:bg-emerald-600 text-white"
                         )}
                     >
-                        Selesai Baca
+                        {t.tilawahFinish}
                     </button>
                 </div>
             </div>

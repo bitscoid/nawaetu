@@ -21,14 +21,18 @@ import {
 } from "lucide-react";
 import { InsightKey, DailyActivity } from "@/hooks/useStatsInsights";
 
-function formatReadingTime(totalSeconds: number): string {
-    if (totalSeconds === 0) return "0 menit";
+function formatReadingTime(totalSeconds: number, q: any): string {
+    if (totalSeconds === 0) return `0 ${q.unitMinuteLong}`;
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    if (hours > 0) return `${hours}j ${minutes}m ${seconds}s`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds} detik`;
+    
+    let result = "";
+    if (hours > 0) result += `${hours}${q.unitHour} `;
+    if (minutes > 0) result += `${minutes}${q.unitMinute} `;
+    if (seconds > 0) result += `${seconds}${q.unitSecond}`;
+    
+    return result.trim() || `0 ${q.unitMinuteLong}`;
 }
 interface InsightModalProps {
     activeInsight: InsightKey | null;
@@ -175,8 +179,8 @@ export function InsightModal({
                                 <InsightRow label={t.stats.insights.quran.totalRead} value={data.totalQuranAyat.toLocaleString()} icon={<BookOpen className="w-3.5 h-3.5 text-blue-400" />} />
                                 {data.totalQuranReadSeconds !== undefined && data.totalQuranReadSeconds > 0 && (
                                     <InsightRow
-                                        label="Durasi Tilawah Hari Ini"
-                                        value={formatReadingTime(data.totalQuranReadSeconds)}
+                                        label={t.quran.tilawahDurationToday}
+                                        value={formatReadingTime(data.totalQuranReadSeconds, t.quran)}
                                         icon={<span className="text-sm">⏱️</span>}
                                     />
                                 )}

@@ -72,4 +72,43 @@ export const quranID = {
     quranSearchAyat: "ayat",
     quranSearchButton: "Cari",
     quranSearchSearching: "Mencari ayat...",
+
+    // Tilawah / Focus Mode
+    tilawahStart: "Mulai Tilawah",
+    tilawahStop: "Selesai Baca",
+    tilawahFocusMode: "Fokus Mode",
+    tilawahNiyyahTitle: "Bismillahir-Rahmanir-Rahim",
+    tilawahNiyyahBody: "Luruskan niat — baca Al-Qur'an karena Allah semata, bukan karena rutinitas. Layar akan masuk mode fokus. Genggamlah setiap ayat dengan hati yang hadir.",
+    tilawahConfirm: "✨ Bismillah, Mulai Tilawah",
+    tilawahCancel: "Batal",
+    tilawahExitTitle: "Akhiri sesi tilawah?",
+    tilawahExitBody: "Anda sudah membaca selama",
+    tilawahExitBodySuffix: ". Waktu ini sudah tersimpan. Lanjutkan jika memungkinkan — setiap menit bernilai di sisi Allah.",
+    tilawahContinue: "Lanjut Baca",
+    tilawahFinish: "Selesai Baca",
+    tilawahExitTooltip: "Keluar dari Fokus Mode",
+
+    // Tilawah Banner & Stats
+    tilawahBannerTitle: "Tilawah Hari Ini",
+    tilawahBannerNoStart: "Belum mulai",
+    tilawahTargetReached: "Target tercapai! 🎉",
+    tilawahTimeLeft: "{{time}} lagi menuju target",
+    tilawahStatsTitle: "Statistik Al-Quran",
+    tilawahTotalAyat: "Total Ayat Dibaca",
+    tilawahTotalAyatSub: "ayat kumulatif",
+    tilawahTotalAyatEmpty: "Mulai baca untuk tracking",
+    tilawahDurationToday: "Durasi Tilawah Hari Ini",
+    tilawahTodaySub: "Hari ini",
+    tilawahNoSessionToday: "Belum ada sesi hari ini",
+    tilawahTotalDuration: "Total Durasi Baca",
+    tilawahTotalDurationSub: "Akumulasi seluruh waktu",
+    tilawahStatsHelp: "Mulai membaca Al-Quran dan gunakan tombol \"Mulai Tilawah\" untuk mencatat aktivitasmu.",
+
+    // Time Units (v1.9.5)
+    unitHour: "j",
+    unitMinute: "m",
+    unitSecond: "s",
+    unitHourLong: "jam",
+    unitMinuteLong: "menit",
+    unitSecondLong: "detik",
 };

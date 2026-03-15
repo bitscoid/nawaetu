@@ -3,17 +3,10 @@
 import { useState, useEffect } from "react";
 import { BookOpen, Clock, Target, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/context/LocaleContext";
 
 const DAILY_TARGET_KEY = "nawaetu_quran_daily_target_minutes";
 const DEFAULT_TARGET_MINUTES = 15;
-
-const TARGET_OPTIONS = [
-    { label: "5m", longLabel: "5 menit", value: 5 },
-    { label: "10m", longLabel: "10 menit", value: 10 },
-    { label: "15m", longLabel: "15 menit", value: 15 },
-    { label: "30m", longLabel: "30 menit", value: 30 },
-    { label: "1j", longLabel: "1 jam", value: 60 },
-];
 
 function getLocalDateString() {
     const today = new Date();
@@ -22,21 +15,34 @@ function getLocalDateString() {
     return today.toISOString().split("T")[0];
 }
 
-function formatDuration(totalSeconds: number): string {
-    if (totalSeconds === 0) return "0 menit";
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    if (hours > 0) return `${hours}j ${minutes}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds} detik`;
-}
-
 export default function QuranReadingBanner() {
     const [dailyTotalSeconds, setDailyTotalSeconds] = useState(0);
     const [targetMinutes, setTargetMinutes] = useState(DEFAULT_TARGET_MINUTES);
     const [showTargetPicker, setShowTargetPicker] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const t = useTranslations();
+
+    const TARGET_OPTIONS = [
+        { label: "5m", longLabel: `5 ${t.unitMinuteLong}`, value: 5 },
+        { label: "10m", longLabel: `10 ${t.unitMinuteLong}`, value: 10 },
+        { label: "15m", longLabel: `15 ${t.unitMinuteLong}`, value: 15 },
+        { label: "30m", longLabel: `30 ${t.unitMinuteLong}`, value: 30 },
+        { label: "1j", longLabel: `1 ${t.unitHourLong}`, value: 60 },
+    ];
+
+    function formatDuration(totalSeconds: number): string {
+        if (totalSeconds === 0) return `0 ${t.unitMinuteLong}`;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        let result = "";
+        if (hours > 0) result += `${hours}${t.unitHour} `;
+        if (minutes > 0) result += `${minutes}${t.unitMinute} `;
+        if (seconds > 0 && hours === 0) result += `${seconds}${t.unitSecond}`;
+        
+        return result.trim() || `0 ${t.unitMinuteLong}`;
+    }
 
     // Hydrate from localStorage on client
     useEffect(() => {
@@ -91,10 +97,10 @@ export default function QuranReadingBanner() {
                             <BookOpen className="w-3 h-3 text-blue-400" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Tilawah Hari Ini</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">{t.tilawahBannerTitle}</p>
                             <p className="text-sm font-black text-white leading-tight truncate">
                                 {dailyTotalSeconds > 0 ? formatDuration(dailyTotalSeconds) : (
-                                    <span className="text-white/40 font-medium text-xs">Belum mulai</span>
+                                    <span className="text-white/40 font-medium text-xs">{t.tilawahBannerNoStart}</span>
                                 )}
                             </p>
                         </div>
@@ -106,7 +112,7 @@ export default function QuranReadingBanner() {
                         className="shrink-0 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-[10px] text-white/60 hover:text-white"
                     >
                         <Target className="w-3 h-3" />
-                        <span className="whitespace-nowrap">{targetMinutes < 60 ? `${targetMinutes}m` : "1j"}</span>
+                        <span className="whitespace-nowrap">{targetMinutes < 60 ? `${targetMinutes}${t.unitMinute}` : `1${t.unitHour}`}</span>
                         <ChevronDown className={cn("w-3 h-3 transition-transform", showTargetPicker && "rotate-180")} />
                     </button>
                 </div>
@@ -150,9 +156,9 @@ export default function QuranReadingBanner() {
                     <div className="flex items-center gap-1 text-[10px] text-white/40">
                         <Clock className="w-3 h-3" />
                         {isCompleted ? (
-                            <span className="text-emerald-400 font-bold">Target tercapai! 🎉</span>
+                            <span className="text-emerald-400 font-bold">{t.tilawahTargetReached}</span>
                         ) : (
-                            <span>{formatDuration(timeLeft)} lagi menuju target</span>
+                            <span>{t.tilawahTimeLeft.replace('{{time}}', formatDuration(timeLeft))}</span>
                         )}
                     </div>
                     <span className={cn(

@@ -23,6 +23,7 @@ import { trackQuranRead } from "@/lib/analytics";
 import { useQuranTimeTracker } from "@/hooks/useQuranTimeTracker";
 import { useFocusMode } from "@/hooks/useFocusMode";
 import { useTheme } from "@/context/ThemeContext";
+import { useTranslations } from "@/context/LocaleContext";
 import { BookOpen } from "lucide-react";
 import {
     QuranNiyyahScreen,
@@ -40,6 +41,7 @@ interface QuranTrackerProps {
 export default function QuranTracker({ name, count }: QuranTrackerProps) {
     const { currentTheme } = useTheme();
     const isLight = currentTheme === "daylight";
+    const t = useTranslations();
 
     const { isTracking, sessionSeconds, dailyTotalSeconds, startTracking, stopTracking } =
         useQuranTimeTracker();
@@ -141,7 +143,7 @@ export default function QuranTracker({ name, count }: QuranTrackerProps) {
                                 )} />
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
                             </div>
-                            Selesai Baca
+                            {t.tilawahStop}
                             <span className="opacity-80 ml-1 font-mono text-xs hidden sm:inline-block">
                                 ({timeString})
                             </span>
@@ -157,7 +159,7 @@ export default function QuranTracker({ name, count }: QuranTrackerProps) {
                             )}
                         >
                             <BookOpen className="w-4 h-4" />
-                            Mulai Tilawah
+                            {t.tilawahStart}
                             {dailyTotalSeconds > 0 && (
                                 <span className="opacity-60 ml-1 font-mono text-xs hidden sm:inline-block">
                                     ({timeString})

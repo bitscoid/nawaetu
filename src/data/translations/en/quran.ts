@@ -72,4 +72,43 @@ export const quranEN = {
     quranSearchAyat: "verses",
     quranSearchButton: "Search",
     quranSearchSearching: "Searching verses...",
+
+    // Tilawah / Focus Mode
+    tilawahStart: "Start Recitation",
+    tilawahStop: "Done Reading",
+    tilawahFocusMode: "Focus Mode",
+    tilawahNiyyahTitle: "Bismillahir-Rahmanir-Rahim",
+    tilawahNiyyahBody: "Set your intention — read the Qur'an sincerely for Allah, not out of mere routine. The screen will enter focus mode. Grasp every verse with a present heart.",
+    tilawahConfirm: "✨ Bismillah, Start Recitation",
+    tilawahCancel: "Cancel",
+    tilawahExitTitle: "End recitation session?",
+    tilawahExitBody: "You have been reading for",
+    tilawahExitBodySuffix: ". This time has been saved. Continue if possible — every minute is valued by Allah.",
+    tilawahContinue: "Continue Reading",
+    tilawahFinish: "Finish Reading",
+    tilawahExitTooltip: "Exit Focus Mode",
+
+    // Tilawah Banner & Stats
+    tilawahBannerTitle: "Today's Tilawah",
+    tilawahBannerNoStart: "Not started",
+    tilawahTargetReached: "Target reached! 🎉",
+    tilawahTimeLeft: "{{time}} left until target",
+    tilawahStatsTitle: "Quran Statistics",
+    tilawahTotalAyat: "Total Verses Read",
+    tilawahTotalAyatSub: "cumulative verses",
+    tilawahTotalAyatEmpty: "Start reading for tracking",
+    tilawahDurationToday: "Today's Tilawah Duration",
+    tilawahTodaySub: "Today",
+    tilawahNoSessionToday: "No sessions today",
+    tilawahTotalDuration: "Total Reading Duration",
+    tilawahTotalDurationSub: "Accumulated total time",
+    tilawahStatsHelp: "Start reading Quran and use the \"Start Recitation\" button to record your activity.",
+
+    // Time Units (v1.9.5)
+    unitHour: "h",
+    unitMinute: "m",
+    unitSecond: "s",
+    unitHourLong: "hour",
+    unitMinuteLong: "minute",
+    unitSecondLong: "second",
 };
