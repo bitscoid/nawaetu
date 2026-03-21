@@ -19,6 +19,7 @@
  */
 
 import { useReportWebVitals } from 'next/web-vitals';
+import '@/instrumentation-client';
 
 export function WebVitals() {
   useReportWebVitals((metric) => {

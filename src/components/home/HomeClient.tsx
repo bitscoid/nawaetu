@@ -24,7 +24,7 @@ import RamadhanCountdown from "@/components/RamadhanCountdown";
 import IntentionJournalWidget from "@/components/intentions/IntentionJournalWidget";
 import DeferredBelowFold from "@/components/home/DeferredBelowFold";
 import HomeHeader from "@/components/HomeHeader";
-import TakbiranZenMode from "@/components/ramadhan/TakbiranZenMode";
+import EidCard from "@/components/ramadhan/EidCard";
 
 export default function HomeClient() {
     const { data } = usePrayerTimesContext();
@@ -34,7 +34,6 @@ export default function HomeClient() {
     const [initialDaysLeft, setInitialDaysLeft] = useState(0);
     const [isRamadhanSeason, setIsRamadhanSeason] = useState(false);
     const [mounted, setMounted] = useState(false);
-    const [showTakbiran, setShowTakbiran] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -58,6 +57,8 @@ export default function HomeClient() {
     const isRamadhan = mounted && (isRamadhanSeason || (data
         ? (hijriMonth.includes("Ramadan") || hijriMonth.includes("Ramadhan"))
         : false));
+    const isEidSeason = mounted && (hijriMonth === "Shawwal" && (data?.hijriDay || 0) <= 3);
+    const showSeasonalCard = isRamadhan || isEidSeason;
 
     return (
         <div className="flex min-h-screen flex-col items-center bg-[rgb(var(--color-background))] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(var(--color-primary),0.15),rgba(255,255,255,0))] px-4 py-4 font-sans sm:px-6">
@@ -68,28 +69,14 @@ export default function HomeClient() {
                 <HomeHeader />
 
 
-                {/* 2. Ramadhan Countdown - Hidden during Ramadhan season */}
-                {!isRamadhan && (
-                    <section className="w-full">
-                        <RamadhanCountdown initialDays={initialDaysLeft} />
-                    </section>
+                {/* 2. Seasonal Card (Ramadhan / Lebaran) */}
+                {showSeasonalCard && (
+                    isEidSeason ? <EidCard /> : (
+                        <section className="w-full mb-2">
+                            <RamadhanCountdown initialDays={initialDaysLeft} />
+                        </section>
+                    )
                 )}
-
-                {/* 3. Takbiran Trigger (Shown at end of Ramadhan/Eid) */}
-                <section className="w-full mb-2">
-                    <button 
-                        onClick={() => setShowTakbiran(true)}
-                        className="w-full relative overflow-hidden group rounded-2xl border border-[rgb(var(--color-primary))]/30 bg-black/40 backdrop-blur-sm shadow-[0_0_20px_rgba(var(--color-primary),0.15)] flex items-center justify-between p-4 transition-transform active:scale-95"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-[rgb(var(--color-primary-dark))]/50 to-black/80 -z-10" />
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--color-primary-light))]">Menyambut Syawal</span>
-                            <span className="text-xl font-bold text-white font-serif">Malam Takbiran</span>
-                        </div>
-                        <span className="text-3xl filter drop-shadow opacity-90 group-hover:scale-110 transition-transform">✨</span>
-                    </button>
-                    {showTakbiran && <TakbiranZenMode onClose={() => setShowTakbiran(false)} />}
-                </section>
 
                 {/* 4. Nawaetu Journal - The core uniqueness */}
                 <section className="w-full animate-in slide-in-from-bottom-3 fade-in duration-700">
