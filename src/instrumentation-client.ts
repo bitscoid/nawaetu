@@ -58,6 +58,8 @@ const initSentry = () => {
     ignoreErrors: [
       /TypeError: Converting circular structure to JSON.*HTMLButtonElement/i,
       /Converting circular structure to JSON/i,
+      /ReferenceError: Can't find variable: __firefox__/i,
+      /Can't find variable: __firefox__/i,
     ],
   });
 };
