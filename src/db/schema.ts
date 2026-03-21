@@ -46,6 +46,10 @@ export const fastingConsequenceEnum = pgEnum("fasting_consequence", [
     "choice", // Pilihan qadha atau fidyah (ikhtilaf madzhab)
 ]);
 
+export const tarawehChoiceEnum = pgEnum("taraweh_choice", ["8", "20"]);
+export const tarawehLocationEnum = pgEnum("taraweh_location", ["masjid", "rumah"]);
+export const prayerLocationEnum = pgEnum("prayer_location", ["masjid", "rumah", "keduanya"]);
+
 // --- Users & Auth (Compatible with NextAuth.js) ---
 
 export const users = pgTable("user", {
@@ -342,6 +346,23 @@ export const ramadhanFastingLog = pgTable("ramadhan_fasting_log", {
     userYearIdx: index("rfl_user_year_idx").on(table.userId, table.hijriYear),
 }));
 
+export const ramadhanTarawehLog = pgTable("ramadhan_taraweh_log", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    hijriYear: integer("hijri_year").notNull(),
+    hijriDay: integer("hijri_day").notNull(),
+    choice: tarawehChoiceEnum("choice"), // '8', '20', or null if deleted
+    location: tarawehLocationEnum("location"), // 'masjid' or 'rumah'
+    isQiyamulLail: boolean("is_qiyamul_lail").default(false), // e.g. for last 10 nights dedicated tracker
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+    userYearDayUnique: uniqueIndex("rtl_user_year_day_unique").on(table.userId, table.hijriYear, table.hijriDay),
+    userYearIdx: index("rtl_user_year_idx").on(table.userId, table.hijriYear),
+}));
+
 // Types for application use
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -361,6 +382,8 @@ export type ChatSession = typeof chatSessions.$inferSelect;
 export type NewChatSession = typeof chatSessions.$inferInsert;
 export type RamadhanFastingLog = typeof ramadhanFastingLog.$inferSelect;
 export type NewRamadhanFastingLog = typeof ramadhanFastingLog.$inferInsert;
+export type RamadhanTarawehLog = typeof ramadhanTarawehLog.$inferSelect;
+export type NewRamadhanTarawehLog = typeof ramadhanTarawehLog.$inferInsert;
 export const userReadingState = pgTable("user_reading_state", {
     userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }).primaryKey(),
 
@@ -384,3 +407,43 @@ export const userReadingStateRelations = relations(userReadingState, ({ one }) =
         references: [users.id],
     }),
 }));
+// --- Ramadhan Daily Log (prayer location + sunnah checklist, v2.0) ---
+// Tracks per-day: fardhu prayer location habit + sunnah prayers done
+export const ramadhanDailyLog = pgTable("ramadhan_daily_log", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("userId")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+
+    hijriYear: integer("hijri_year").notNull(),
+    hijriDay: integer("hijri_day").notNull(), // 1–30
+
+    // Fardhu prayer location for the day (majority of 5 prayers)
+    // null = not recorded, "masjid" = mostly at mosque, "rumah" = mostly at home, "keduanya" = mixed
+    fardhuLocation: prayerLocationEnum("fardhu_location"),
+
+    // Individual fardhu prayers at masjid (true = at masjid, false = at rumah/home, null = not logged)
+    fajrAtMasjid: boolean("fajr_at_masjid"),
+    dhuhrAtMasjid: boolean("dhuhr_at_masjid"),
+    asrAtMasjid: boolean("asr_at_masjid"),
+    maghribAtMasjid: boolean("maghrib_at_masjid"),
+    ishaAtMasjid: boolean("isha_at_masjid"),
+
+    // Sunnah prayers done today
+    dhuha: boolean("dhuha").default(false),
+    rawatibQabl: boolean("rawatib_qabl").default(false),  // Sunnah before fardhu (Qabliyah)
+    rawatibBad: boolean("rawatib_bad").default(false),   // Sunnah after fardhu (Ba'diyah)
+    witir: boolean("witir").default(false),
+    istikharah: boolean("istikharah").default(false),
+    hajat: boolean("hajat").default(false),
+    taubat: boolean("taubat").default(false),
+
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+    userYearDayIdx: uniqueIndex("rdl_user_year_day_unique").on(table.userId, table.hijriYear, table.hijriDay),
+    userIdIdx: index("rdl_user_id_idx").on(table.userId),
+}));
+
+export type RamadhanDailyLog = typeof ramadhanDailyLog.$inferSelect;
+export type NewRamadhanDailyLog = typeof ramadhanDailyLog.$inferInsert;

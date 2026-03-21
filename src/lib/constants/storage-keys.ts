@@ -98,9 +98,10 @@ export const STORAGE_KEYS = {
   RAMADHAN_KHATAMAN_LOG: 'nawaetu_ramadhan_khataman_log', // { currentJuz: 3, log: [...] }
   RAMADHAN_YEAR: 'nawaetu_ramadhan_year',                 // "1447" — for yearly reset
 
-  // Ramadhan Fasting Tracker (v2.0.0)
-  RAMADHAN_FASTING_LOG: 'nawaetu_ramadhan_fasting_log',      // AllFastingLogs: { "1447": { "1447-01": { ... } } }
+  RAMADHAN_FASTING_LOG: 'nawaetu_ramadhan_fasting_log',       // AllFastingLogs: { "1447": { "1447-01": { ... } } }
   RAMADHAN_FASTING_MADZHAB: 'nawaetu_ramadhan_fasting_madzhab', // "syafii" | "hanafi" | "maliki" | "hanbali"
+  RAMADHAN_DAILY_LOG: 'nawaetu_ramadhan_daily_log',            // { "1447": { "1447-01": { fajrAtMasjid, dhuha, ... } } }
+  RAMADHAN_INSIGHT_CACHE: 'nawaetu_ramadhan_insight_cache',    // { "1447": "insight text..." }
 } as const;
 
 // Type for storage keys

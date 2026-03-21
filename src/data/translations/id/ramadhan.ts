@@ -172,6 +172,33 @@ export const ramadhanID = {
     prayerCompleted: "Selesai",
     prayerPending: "Belum",
     prayerMissed: "Terlewat",
+
+    // Ramadhan Wrapped
+    wrappedTriggerTitle: "Rapor Ramadhan",
+    wrappedTriggerSubtitle: "Puasa, Tarawih, Tilawah & AI Insight",
+    wrappedTriggerCta: "Lihat",
+    wrappedTitleLabel: "Nawaetu Wrapped",
+    wrappedTitle: "Rapor Ramadhan {year}H",
+    wrappedGreeting: "Alhamdulillah, {name}",
+    wrappedLoading: "Menghimpun Amal Ramadhan...",
+    wrappedFasting: "Puasa",
+    wrappedDays: "Hari",
+    wrappedTaraweh: "Tarawih",
+    wrappedNights: "Malam",
+    wrappedQiyamulLail: "Qiyamul Lail",
+    wrappedLast10Nights: "10 Malam Terakhir",
+    wrappedQuran: "Tilawah",
+    wrappedAyahs: "{count} Ayat",
+    wrappedHasanah: "{xpName} Terkumpul",
+    wrappedStreak: "Best Streak",
+    wrappedLocationTitle: "Lokasi Tarawih",
+    wrappedRakaatTitle: "Rakaat Favorit",
+    wrappedAIInsight: "Nawaetu",
+    wrappedAILoading: "Merangkum perjalananmu...",
+    wrappedDownload: "Unduh Rapor",
+    wrappedRendering: "Nge-Render...",
+    wrappedSaved: "Tersimpan",
+    wrappedFooterQuote: "\"Taqabbalallahu minna wa minkum\"",
 } as const;
 
 export type RamadhanTranslationKeys = keyof typeof ramadhanID;

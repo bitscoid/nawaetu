@@ -24,6 +24,7 @@ import RamadhanCountdown from "@/components/RamadhanCountdown";
 import IntentionJournalWidget from "@/components/intentions/IntentionJournalWidget";
 import DeferredBelowFold from "@/components/home/DeferredBelowFold";
 import HomeHeader from "@/components/HomeHeader";
+import TakbiranZenMode from "@/components/ramadhan/TakbiranZenMode";
 
 export default function HomeClient() {
     const { data } = usePrayerTimesContext();
@@ -33,6 +34,7 @@ export default function HomeClient() {
     const [initialDaysLeft, setInitialDaysLeft] = useState(0);
     const [isRamadhanSeason, setIsRamadhanSeason] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [showTakbiran, setShowTakbiran] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -72,6 +74,22 @@ export default function HomeClient() {
                         <RamadhanCountdown initialDays={initialDaysLeft} />
                     </section>
                 )}
+
+                {/* 3. Takbiran Trigger (Shown at end of Ramadhan/Eid) */}
+                <section className="w-full mb-2">
+                    <button 
+                        onClick={() => setShowTakbiran(true)}
+                        className="w-full relative overflow-hidden group rounded-2xl border border-[rgb(var(--color-primary))]/30 bg-black/40 backdrop-blur-sm shadow-[0_0_20px_rgba(var(--color-primary),0.15)] flex items-center justify-between p-4 transition-transform active:scale-95"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-[rgb(var(--color-primary-dark))]/50 to-black/80 -z-10" />
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--color-primary-light))]">Menyambut Syawal</span>
+                            <span className="text-xl font-bold text-white font-serif">Malam Takbiran</span>
+                        </div>
+                        <span className="text-3xl filter drop-shadow opacity-90 group-hover:scale-110 transition-transform">✨</span>
+                    </button>
+                    {showTakbiran && <TakbiranZenMode onClose={() => setShowTakbiran(false)} />}
+                </section>
 
                 {/* 4. Nawaetu Journal - The core uniqueness */}
                 <section className="w-full animate-in slide-in-from-bottom-3 fade-in duration-700">

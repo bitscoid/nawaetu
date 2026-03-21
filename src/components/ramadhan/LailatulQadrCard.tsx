@@ -31,11 +31,17 @@ import {
 import DalilBadge from "./DalilBadge";
 import { useTranslations } from "@/context/LocaleContext";
 import LailatulQadrGuideModal from "./LailatulQadrGuideModal";
+import { useTarawehTracker } from "@/hooks/useTarawehTracker";
+import { toast } from "sonner";
+import { addHasanah } from "@/lib/leveling";
 
 export default function LailatulQadrCard() {
     const { data } = usePrayerTimesContext();
-    const t = useTranslations();
+    const t = useTranslations() as any;
     const [guideOpen, setGuideOpen] = useState(false);
+
+    const hijriYear = parseInt(data?.hijriDate?.split(" ").pop()?.replace("H", "") ?? "1447", 10);
+    const { log, updateDay } = useTarawehTracker(hijriYear);
 
     // In Islam, night precedes the day. Advance the Hijri day after Maghrib.
     let baseHijriDay = data?.hijriDay ?? 1;
@@ -129,59 +135,104 @@ export default function LailatulQadrCard() {
                         const isOdd = isOddNight(night);
                         const isActive = status === "tonight";
                         const isPast = status === "past";
+                        
+                        // Qiyam Tracker Logic
+                        const dKey = `${hijriYear}-${night}`;
+                        const dData = log[dKey] || { choice: null, location: null, isQiyam: false };
+                        const isDone = dData.isQiyam;
+
+                        const handleToggleQiyam = () => {
+                            if (status === "upcoming") return; // cannot check future days
+                            
+                            const newStatus = !isDone;
+                            updateDay(night, { isQiyam: newStatus });
+                            
+                            if (newStatus) {
+                                addHasanah(50);
+                                toast.success(t.gamificationQiyamulLailSuccess || "Qiyamul Lail Tercatat ✨", {
+                                    description: t.gamificationQiyamulLailDesc || `Masya Allah! +50 ${t.gamificationXpName || "Hasanah"}`,
+                                    duration: 3500,
+                                    icon: "🤲"
+                                });
+                            }
+                        };
 
                         return (
-                            <div
+                            <button
                                 key={night}
-                                className={`relative flex flex-col items-center justify-center rounded-xl py-2 border transition-all duration-200 ${isOdd && !isActive ? "hover:-translate-y-0.5" : ""
-                                    } ${isPast ? "opacity-40" : ""}`}
+                                disabled={status === "upcoming"}
+                                onClick={handleToggleQiyam}
+                                className={`relative flex flex-col items-center justify-center rounded-xl py-2 border transition-all duration-200 
+                                    ${isOdd && !isActive && !isDone ? "hover:-translate-y-0.5" : ""} 
+                                    ${status === "upcoming" ? "opacity-40 cursor-not-allowed" : "active:scale-95 cursor-pointer"}
+                                    ${isDone ? "shadow-[0_0_10px_rgba(var(--color-primary),0.2)]" : ""}
+                                `}
                                 style={{
-                                    borderColor: isActive
-                                        ? "rgba(var(--color-primary), 0.5)"
-                                        : isOdd
-                                            ? "rgba(var(--color-primary-light), 0.12)"
-                                            : "rgba(255,255,255,0.04)",
-                                    background: isActive
-                                        ? "rgba(var(--color-primary), 0.15)"
-                                        : isOdd
-                                            ? "rgba(var(--color-primary), 0.05)"
-                                            : "rgba(255,255,255,0.02)",
-                                    transform: isActive ? "scale(1.06)" : undefined,
+                                    borderColor: isDone
+                                        ? "rgba(var(--color-primary), 0.7)"
+                                        : isActive
+                                            ? "rgba(var(--color-primary), 0.5)"
+                                            : isOdd
+                                                ? "rgba(var(--color-primary-light), 0.12)"
+                                                : "rgba(255,255,255,0.04)",
+                                    background: isDone
+                                        ? "rgba(var(--color-primary), 0.25)"
+                                        : isActive
+                                            ? "rgba(var(--color-primary), 0.15)"
+                                            : isOdd
+                                                ? "rgba(var(--color-primary), 0.05)"
+                                                : "rgba(255,255,255,0.02)",
+                                    transform: isActive && !isDone ? "scale(1.06)" : undefined,
                                 }}
                             >
                                 {/* Active dot */}
-                                {isActive && (
+                                {isActive && !isDone && (
                                     <span
                                         className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full animate-pulse"
                                         style={{ background: "rgb(var(--color-primary-light))" }}
                                     />
                                 )}
+                                
+                                {/* Completed Checkmark */}
+                                {isDone && (
+                                    <span
+                                        className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 shadow-md ring-2 ring-black"
+                                    >
+                                        <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                )}
 
                                 {/* Icon */}
-                                <span className={`${isOdd ? "text-base" : "text-sm"} leading-none`}>
-                                    {isActive && isOdd
-                                        ? "⭐"
-                                        : isPast
-                                            ? "✓"
-                                            : isOdd
-                                                ? "✨"
-                                                : "🌙"}
+                                <span className={`${isOdd ? "text-base" : "text-sm"} leading-none ${isDone ? "opacity-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" : ""}`}>
+                                    {isDone 
+                                        ? "🤲" 
+                                        : isActive && isOdd
+                                            ? "⭐"
+                                            : isPast
+                                                ? "✓"
+                                                : isOdd
+                                                    ? "✨"
+                                                    : "🌙"}
                                 </span>
 
                                 {/* Night number */}
                                 <span
                                     className={`mt-1 leading-none ${isOdd ? "text-xs font-bold" : "text-[10px] font-medium"}`}
                                     style={{
-                                        color: isActive
-                                            ? "rgb(var(--color-primary-light))"
-                                            : isOdd
-                                                ? "rgba(var(--color-primary-light), 0.7)"
-                                                : "rgba(255,255,255,0.28)",
+                                        color: isDone 
+                                            ? "white"
+                                            : isActive
+                                                ? "rgb(var(--color-primary-light))"
+                                                : isOdd
+                                                    ? "rgba(var(--color-primary-light), 0.7)"
+                                                    : "rgba(255,255,255,0.28)",
                                     }}
                                 >
                                     {night}
                                 </span>
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
