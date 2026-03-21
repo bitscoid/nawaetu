@@ -202,7 +202,6 @@ export default function RamadhanCountdown({ initialDays = 0 }: Props) {
     const hijriDay = prayerData?.hijriDay || 0;
 
     const isRamadhan = hijriMonth === "Ramadan";
-    const isEid = hijriMonth === "Shawwal";
 
     // Calculate effective days left/passed
     // On Feb 18 with -1 adj, we want "1 Hari Lagi" (Sha'ban 30)
@@ -213,17 +212,6 @@ export default function RamadhanCountdown({ initialDays = 0 }: Props) {
 
     // Dynamic Intensity Logic
     const getIntensityStyles = (days: number) => {
-        if (isEid) {
-            return {
-                bg: "from-yellow-600/40 via-amber-500/20 to-yellow-900/60", // Gold/Festive
-                border: "border-yellow-500/50 shadow-[0_0_30px_-5px_rgba(234,179,8,0.3)]",
-                text: "text-yellow-400",
-                icon: "fill-yellow-400 text-yellow-200",
-                glow: "bg-yellow-500/30",
-                animate: "animate-pulse"
-            };
-        }
-
         if (isRamadhan) {
             // Use CSS Variables for Dynamic Theme Integration
             return {
@@ -286,10 +274,10 @@ export default function RamadhanCountdown({ initialDays = 0 }: Props) {
                 {/* Optimized Background */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${styles.bg} rounded-3xl -z-10 opacity-80`} />
 
-                <div className={`relative w-full bg-black/40 border ${styles.border} rounded-3xl px-6 py-6 flex items-center justify-between overflow-hidden`}>
+                <div className={`relative w-full bg-white/40 dark:bg-black/40 backdrop-blur-md border ${styles.border} rounded-3xl px-6 py-6 flex items-center justify-between overflow-hidden`}>
 
                     {/* Simple decorative glow */}
-                    <div className={`absolute -right-10 -top-10 w-32 h-32 bg-${styles.glow.split('-')[1]}-500/20 rounded-full blur-2xl pointer-events-none`} />
+                    <div className={`absolute -right-10 -top-10 w-32 h-32 ${styles.glow} rounded-full blur-2xl pointer-events-none`} />
 
                     {isRamadhan ? (
                         /* RAMADHAN MODE: Portal to Hub */
@@ -302,11 +290,11 @@ export default function RamadhanCountdown({ initialDays = 0 }: Props) {
                                     </span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-3xl font-bold font-serif text-white leading-none tracking-tight filter drop-shadow-md pb-1">
+                                    <span className="text-3xl font-bold font-serif text-slate-800 dark:text-white leading-none tracking-tight filter drop-shadow-md pb-1">
                                         Hari ke-{displayDays}
                                     </span>
                                     {/* Next Prayer Time (Imsak / Maghrib) */}
-                                    <span className="text-sm font-medium text-white/70 mt-1 flex items-center gap-1.5">
+                                    <span className="text-sm font-medium text-slate-600 dark:text-white/70 mt-1 flex items-center gap-1.5">
                                         ⏱️ {
                                             !isMounted ? "..." : (() => {
                                                 const now = new Date();
@@ -346,26 +334,18 @@ export default function RamadhanCountdown({ initialDays = 0 }: Props) {
                         /* COUNTDOWN MODE (Normal) */
                         <>
                             {/* Left: Text & Title */}
-                            <div className="flex flex-col gap-1.5 z-10">
+                            <div className="flex flex-col gap-1.5 z-10 w-full">
                                 <div className={`flex items-center gap-2 ${styles.text} mb-1 transition-colors duration-500`}>
                                     <MoonIcon className={`w-4 h-4 ${styles.icon}`} />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                                        {isEid ? t.ramadhanEidGreeting : t.ramadhanHeading}
+                                        {t.ramadhanHeading}
                                     </span>
                                 </div>
                                 <div className="flex items-baseline gap-2.5">
-                                    {isEid ? (
-                                        <span className="text-xl font-bold font-serif text-white leading-none tracking-tight filter drop-shadow-md pb-1">
-                                            {t.ramadhanFinished}
-                                        </span>
-                                    ) : (
-                                        <>
-                                            <span className="text-4xl font-bold font-serif text-white leading-none tracking-tight filter drop-shadow-md" suppressHydrationWarning>
-                                                {displayDays}
-                                            </span>
-                                            <span className="text-sm font-medium text-white/80">{t.ramadhanDaysLeft}</span>
-                                        </>
-                                    )}
+                                    <span className="text-4xl font-bold font-serif text-slate-800 dark:text-white leading-none tracking-tight filter drop-shadow-sm" suppressHydrationWarning>
+                                        {displayDays}
+                                    </span>
+                                    <span className="text-sm font-medium text-slate-600 dark:text-white/80">{t.ramadhanDaysLeft}</span>
                                 </div>
                             </div>
 
