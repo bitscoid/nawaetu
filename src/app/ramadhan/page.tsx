@@ -38,6 +38,10 @@ const TarawehTracker = dynamic(() => import("@/components/ramadhan/TarawehTracke
     ssr: false,
     loading: () => <div className="h-40 rounded-2xl bg-white/5 animate-pulse" />,
 });
+const DailyPrayerTracker = dynamic(() => import("@/components/ramadhan/DailyPrayerTracker"), {
+    ssr: false,
+    loading: () => <div className="h-56 rounded-2xl bg-white/5 animate-pulse" />,
+});
 const KhatamanProgress = dynamic(() => import("@/components/ramadhan/KhatamanProgress"), {
     ssr: false,
     loading: () => <div className="h-48 rounded-2xl bg-white/5 animate-pulse" />,
@@ -65,6 +69,11 @@ const FastingTrackerWidget = dynamic(() => import("@/components/ramadhan/fasting
     loading: () => <div className="h-64 rounded-3xl bg-white/5 animate-pulse" />,
 });
 
+const RamadhanWrappedCard = dynamic(() => import("@/components/ramadhan/RamadhanWrappedCard"), {
+    ssr: false,
+    loading: () => <div className="h-80 w-full rounded-3xl bg-white/5 animate-pulse border border-white/10" />,
+});
+
 export default function RamadhanPage() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-[rgb(var(--color-background))] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(var(--color-primary),0.12),rgba(255,255,255,0))] px-2 sm:px-3 md:px-4 py-2 sm:py-4 md:py-6 font-sans">
@@ -74,6 +83,13 @@ export default function RamadhanPage() {
                 <section className="w-full">
                     <Suspense fallback={<div className="h-32 w-full rounded-2xl bg-white/5 animate-pulse" />}>
                         <RamadhanHeroCard />
+                    </Suspense>
+                </section>
+
+                {/* Ramadhan Wrapped / Rapor Ramadhan */}
+                <section className="w-full animate-in slide-in-from-bottom-2 fade-in duration-500" style={{ animationDelay: "50ms" }}>
+                    <Suspense fallback={<div className="h-80 w-full rounded-3xl bg-white/5 animate-pulse" />}>
+                        <RamadhanWrappedCard />
                     </Suspense>
                 </section>
 
@@ -102,6 +118,13 @@ export default function RamadhanPage() {
                 <section className="w-full animate-in slide-in-from-bottom-3 fade-in duration-500" style={{ animationDelay: "200ms" }}>
                     <Suspense fallback={<div className="h-40 w-full rounded-2xl bg-white/5 animate-pulse" />}>
                         <TarawehTracker />
+                    </Suspense>
+                </section>
+
+                {/* Daily Prayer & Sunnah Tracker */}
+                <section className="w-full animate-in slide-in-from-bottom-3 fade-in duration-500" style={{ animationDelay: "230ms" }}>
+                    <Suspense fallback={<div className="h-56 w-full rounded-2xl bg-white/5 animate-pulse" />}>
+                        <DailyPrayerTracker />
                     </Suspense>
                 </section>
 
