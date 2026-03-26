@@ -131,7 +131,6 @@ export async function POST(req: NextRequest) {
                         .where(eq(transactions.id, potentialTx.id));
 
                     transaction = potentialTx;
-                    console.log(`[Mayar Webhook] Fallback Sucess. Linked to Transaction ID: ${transaction.id}`);
                 }
             }
         }
